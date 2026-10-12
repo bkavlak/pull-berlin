@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -40,3 +41,23 @@ def test_new_question_version_invalidates_cached_answers(tmp_path: Path) -> None
 
 def test_cache_keeps_the_inner_model_id(tmp_path: Path) -> None:
     assert CachingClassifier(CountingClassifier(), tmp_path / "c.jsonl", "v1").model_id == "counting"
+
+
+class FailingAfter(CountingClassifier):
+    def __init__(self, allowed: int) -> None:
+        super().__init__()
+        self.allowed = allowed
+
+    def classify(self, texts: Sequence[str]) -> list[Judgement]:
+        if len(self.seen) + len(texts) > self.allowed:
+            raise RuntimeError("interrupted")
+        return super().classify(texts)
+
+
+def test_progress_is_kept_when_a_long_batch_is_interrupted(tmp_path: Path) -> None:
+    texts = [f"text {i}" for i in range(20)]
+    with contextlib.suppress(RuntimeError):
+        CachingClassifier(FailingAfter(allowed=16), tmp_path / "c.jsonl", "v1", chunk_size=8).classify(texts)
+    resumed = CountingClassifier()
+    CachingClassifier(resumed, tmp_path / "c.jsonl", "v1", chunk_size=8).classify(texts)
+    assert resumed.seen == texts[16:]

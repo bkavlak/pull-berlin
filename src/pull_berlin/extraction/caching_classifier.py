@@ -13,8 +13,9 @@ from pull_berlin.extraction.ports import Judgement, TextClassifier
 
 
 class CachingClassifier:
-    def __init__(self, inner: TextClassifier, path: Path, question_version: str) -> None:
+    def __init__(self, inner: TextClassifier, path: Path, question_version: str, chunk_size: int = 8) -> None:
         self._inner = inner
+        self._chunk_size = chunk_size
         self._path = path
         self._salt = f"{inner.model_id}|{question_version}|"
         self._known: dict[str, Judgement] = {}
@@ -32,11 +33,13 @@ class CachingClassifier:
         missing = list(
             dict.fromkeys(text for text, key in zip(texts, keys, strict=True) if key not in self._known)
         )
-        if missing:
-            fresh = self._inner.classify(missing)
+        # Classify in chunks and append each chunk at once, so an interrupted run resumes where it stopped.
+        for offset in range(0, len(missing), self._chunk_size):
+            chunk = missing[offset : offset + self._chunk_size]
+            fresh = self._inner.classify(chunk)
             self._path.parent.mkdir(parents=True, exist_ok=True)
             with self._path.open("a", encoding="utf-8") as log:
-                for text, judgement in zip(missing, fresh, strict=True):
+                for text, judgement in zip(chunk, fresh, strict=True):
                     key = self._key(text)
                     self._known[key] = judgement
                     log.write(json.dumps({"key": key, "judgement": _encode(judgement)}) + "\n")
