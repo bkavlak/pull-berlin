@@ -8,6 +8,10 @@ A label says whether **the text itself states** the proposition; `null` means no
   from the first ~700 characters of each passage. **Silver, not gold: needs human review** before
   numbers from it are trusted or used for fine-tuning. Few positives for `operates_past_midnight`.
 
+Labelling page: the **Venue Passage Labels** artifact on claude.ai holds the 141 exported passages
+(Claude's silver labels shown as drafts on the first 50). Label there with Y / N / U, then ask Claude to
+read the labels back into `gold/human-<date>.jsonl` (or use the page's "Copy labels as JSONL").
+
 Workflow: `uv run python tools/export_passages.py` writes unlabelled candidates to `eval/candidates.jsonl`
 (ignored by git); label them, move finished lines into `gold/`, then
 `uv run --extra laya python tools/eval_classifiers.py`.
