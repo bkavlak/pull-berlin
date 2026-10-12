@@ -46,6 +46,7 @@ _BLOCK_TAGS = {
 }
 _FILE_SUFFIX = re.compile(r"\.(pdf|jpe?g|png|gif|webp|svg|zip|docx?|xlsx?|mp[34])$", re.IGNORECASE)
 _MIN_PASSAGE_CHARS = 40
+_MIN_PROSE_WORDS = 6  # shorter lines are menus, buttons and labels, not statements
 _TIMEOUT_S = 20.0
 
 
@@ -94,6 +95,7 @@ class _Reader(HTMLParser):
         if self._in_title:
             self._title.append(data)
         elif not self._skip_depth:
+            data = data.replace("\n", " ")  # in HTML only block elements break lines
             self._chunks.append(data)
             if self._link is not None:
                 self._link[1].append(data)
@@ -144,10 +146,11 @@ def candidate_links(page: PageText, homepage: str, limit: int) -> list[str]:
 
 
 def passages(text: str, url: str, max_chars: int, limit: int) -> list[Passage]:
-    """Packs paragraphs into passages of <= `max_chars`; keeps the `limit` most relevant, in page order."""
+    """Packs prose lines into passages of <= `max_chars`; keeps the `limit` most relevant, in page order."""
     chunks: list[str] = []
     current = ""
-    for paragraph in (p for line in text.split("\n") for p in _split_long(line, max_chars)):
+    prose = (line for line in text.split("\n") if len(line.split()) >= _MIN_PROSE_WORDS)
+    for paragraph in (p for line in prose for p in _split_long(line, max_chars)):
         if current and len(current) + 1 + len(paragraph) > max_chars:
             chunks.append(current)
             current = paragraph

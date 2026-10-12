@@ -145,3 +145,14 @@ class TestAbsorb:
         assert Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS) in {
             s.proposition for s in enriched.statements
         }
+
+
+class TestProseOnly:
+    def test_navigation_menus_do_not_become_passages(self) -> None:
+        menu = "\n".join(["Home", "Über uns", "Location mieten", "Kontakt", "Impressum"] * 10)
+        assert passages(menu, "https://x.example", max_chars=600, limit=3) == []
+
+    def test_sentences_survive_between_menu_lines(self) -> None:
+        text = "Home\nKontakt\nUnser Saal kann für private Feiern und Hochzeiten gemietet werden.\nImpressum"
+        (passage,) = passages(text, "https://x.example", max_chars=600, limit=3)
+        assert passage.text == "Unser Saal kann für private Feiern und Hochzeiten gemietet werden."

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from pull_berlin.application.pull import pull
 from pull_berlin.extraction.caching_classifier import CachingClassifier
+from pull_berlin.extraction.gate import LexicalGate
 from pull_berlin.extraction.keyword_classifier import KeywordClassifier
 from pull_berlin.extraction.ports import TextClassifier
 from pull_berlin.extraction.questions import QUESTION_SET_V1
@@ -43,9 +44,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     pull_cmd.add_argument("--site-limit", type=int, default=None, help="enrich at most N facilities (sample)")
     pull_cmd.add_argument(
         "--classifier",
-        choices=("laya", "keywords"),
+        choices=("laya", "laya-ungated", "keywords"),
         default="laya",
-        help="how website text is read: Laya model (needs `uv sync --extra laya`) or keyword baseline",
+        help="how website text is read: Laya behind a lexical gate (default; needs `uv sync --extra laya`), "
+        "Laya on every passage, or the keyword baseline",
     )
     pull_cmd.add_argument("--laya-batch-size", type=int, default=4, help="texts per Laya forward pass")
     args = parser.parse_args(argv)
@@ -81,14 +83,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _classifier(name: str, cache: Path, batch_size: int) -> TextClassifier:
-    inner: TextClassifier
-    if name == "laya":
-        from pull_berlin.extraction.laya_classifier import LayaClassifier
+    if name == "keywords":
+        return KeywordClassifier()
+    from pull_berlin.extraction.laya_classifier import LayaClassifier
 
-        inner = LayaClassifier(batch_size=batch_size)
-    else:
-        inner = KeywordClassifier()
-    return CachingClassifier(inner, cache / "judgements" / f"{inner.model_id}.jsonl", QUESTION_SET_V1.version)
+    laya = LayaClassifier(batch_size=batch_size)
+    cached = CachingClassifier(laya, cache / "judgements" / f"{laya.model_id}.jsonl", QUESTION_SET_V1.version)
+    return cached if name == "laya-ungated" else LexicalGate(cached)
 
 
 if __name__ == "__main__":
