@@ -27,6 +27,8 @@ class FetchRequest:
     method: str = "GET"
     form: tuple[tuple[str, str], ...] = field(default=())  # sent url-encoded as the POST body
     headers: tuple[tuple[str, str], ...] = field(default=())
+    timeout_s: float | None = None  # how long this request may take; not part of its identity
+    retries: int | None = None  # how often a transient failure is retried; not part of its identity
 
     @property
     def fingerprint(self) -> str:

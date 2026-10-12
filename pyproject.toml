@@ -7,6 +7,9 @@ license = "MIT"
 requires-python = ">=3.10"
 dependencies = []
 
+[project.optional-dependencies]
+laya = ["laya>=0.4.6"]
+
 [project.scripts]
 pull-berlin = "pull_berlin.cli:main"
 
@@ -52,3 +55,7 @@ strict = true
 python_version = "3.10"
 mypy_path = "src"
 packages = ["pull_berlin"]
+
+[[tool.mypy.overrides]]
+module = ["laya", "laya.*"]
+ignore_missing_imports = true

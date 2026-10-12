@@ -76,3 +76,36 @@ def test_views_are_sorted_by_id_for_reproducible_exports() -> None:
 def test_a_source_that_cannot_be_fetched_fails_the_run_loudly() -> None:
     with pytest.raises(FetchError):
         pull([OsmOverpassSource()], FakeFetcher({}))
+
+
+class TestEnrichmentFromVenueSites:
+    SITE = "https://bar.example/"
+    BAR = osm_node(10, "Bar Zentral", 52.52, 13.41, amenity="bar", website="https://bar.example/")
+
+    def run(self, pages: dict[str, str]):  # type: ignore[no-untyped-def]
+        from pull_berlin.extraction.keyword_classifier import KeywordClassifier
+        from pull_berlin.sources.venue_site import VenueSiteSource
+
+        fetcher = FakeFetcher({ENDPOINT: overpass_json(self.BAR), **pages})
+        return pull(
+            [OsmOverpassSource()], fetcher, enrichers=[VenueSiteSource()], classifier=KeywordClassifier()
+        )
+
+    def test_rental_page_on_the_venue_site_brings_a_bar_into_scope_as_hireable(self) -> None:
+        home = "<html><body><p>Bar Zentral in Mitte. Unsere Bar kann für private Feiern gemietet werden.</p>"
+        (bar,) = self.run({self.SITE: home}).facilities
+        assert [o.kind for o in bar.offerings] == ["event_hire"]
+        assert "site:bar.example" in bar.refs
+
+    def test_site_without_signal_leaves_the_bar_out_of_scope(self) -> None:
+        home = "<html><body><p>Bar Zentral in Mitte. Cocktails, Wein und Bier seit 1998 in bester Lage.</p>"
+        assert self.run({self.SITE: home}).facilities == []
+
+    def test_report_counts_visited_sites_and_classified_passages(self) -> None:
+        home = "<html><body><p>Bar Zentral in Mitte. Cocktails, Wein und Bier seit 1998 in bester Lage.</p>"
+        report = self.run({self.SITE: home}).report
+        assert (report.sites_attempted, report.sites_observed, report.passages_classified) == (1, 1, 1)
+
+    def test_unreachable_site_is_counted_not_fatal(self) -> None:
+        report = self.run({}).report
+        assert (report.sites_attempted, report.sites_observed) == (1, 0)

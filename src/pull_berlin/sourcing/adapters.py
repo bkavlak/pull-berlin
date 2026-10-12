@@ -37,19 +37,22 @@ class HttpFetcher:
 
     def fetch(self, request: FetchRequest) -> RawDocument:
         last_error = ""
-        for attempt in range(self._retries + 1):
+        retries = self._retries if request.retries is None else request.retries
+        timeout = self._timeout_s if request.timeout_s is None else request.timeout_s
+        for attempt in range(retries + 1):
             if attempt:
                 time.sleep(self._backoff_s * attempt)
             self._wait_for_turn(request.url)
             try:
-                with urllib.request.urlopen(self._prepare(request), timeout=self._timeout_s) as response:
-                    content = response.read().decode("utf-8")
+                with urllib.request.urlopen(self._prepare(request), timeout=timeout) as response:
+                    charset = response.headers.get_content_charset() or "utf-8"
+                    content = response.read().decode(charset, errors="replace")
                 return RawDocument(request.source_id, request.url, content, datetime.now(timezone.utc))
             except urllib.error.HTTPError as error:
                 last_error = f"HTTP {error.code} from {request.url}"
                 if error.code not in _RETRYABLE:
                     break
-            except (urllib.error.URLError, TimeoutError) as error:
+            except (urllib.error.URLError, TimeoutError, ConnectionError, LookupError) as error:
                 last_error = f"{error} for {request.url}"
         raise FetchError(last_error)
 

@@ -6,7 +6,7 @@ bears Space Use Roles. Sources describe facilities, so resolution and evidence l
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from pull_berlin.catalog.domain.assessment import Assessment, AssessmentPolicy
 from pull_berlin.catalog.domain.claim import Statement
@@ -61,6 +61,16 @@ class Facility:
             refs=self.refs | other.refs,
             statements=tuple(dict.fromkeys(self.statements + other.statements)),
             websites=self.websites | other.websites,
+        )
+
+    def absorb(self, observation: Observation) -> Facility:
+        """Takes in what an enrichment source (crawled for this facility) says about it.
+        Identity, name and location stay; the source reference and statements are added."""
+        ref = ExternalRef(observation.source_id, observation.local_id)
+        return replace(
+            self,
+            refs=self.refs | {ref},
+            statements=tuple(dict.fromkeys(self.statements + observation.statements)),
         )
 
     def assess(self, policy: AssessmentPolicy) -> Assessment:
