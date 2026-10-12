@@ -29,6 +29,7 @@ The model is built around `Space` + `Offering` so that later use cases (coworkin
 | D10 | Foundation | Parallel formal ontology: BFO 2020 → CCO → `pb:` with GeoSPARQL/PROV/SKOS, applying Smith & Mark (1998). Domain model specializes it. See [`ontology.md`](ontology.md) |
 | D11 | Spatial store | Local **PostGIS** behind `SpaceRepository` (replaces SQLite). Enables containment, Bezirk assignment, proximity search, and GeoSQL |
 | D12 | Map in the loop | **GeoSQL** agent skill + self-hosted **Dekart** to render query results and catch geometry errors visually |
+| D13 | Aggregate root | **Facility** (cco:Material Artifact) is the aggregate root; sources describe facilities, offerings are its roles. Event Spaces become entities inside it when a source distinguishes them |
 
 ---
 
@@ -219,10 +220,10 @@ Adding a source = new package under `sources/` + registry entry + fixtures. Addi
 
 ## 10. Milestones
 
-0. **Ontology v0.1** — done in draft: core terms, Berlin regions, shapes, example, quality gate.
-1. **Skeleton** — `.tool-versions` (asdf), `pyproject.toml` + `uv.lock` (uv), `compose.yaml` (PostGIS, Dekart), CI with pyramid check + ontology check, empty contexts.
-2. **Catalog core** — value objects, Space, Claim, ConfidencePolicy, OfferingPolicy, ResolutionPolicy (all unit tested).
-3. **OSM slice** — Overpass discover + adapter, opening-hours → TimeWindow, export CSV/JSON/GeoJSON.
+0. **Ontology v0.1** — ✅ core terms, Berlin regions, shapes, example, quality gate.
+1. ✅ **Skeleton** — `.tool-versions` (asdf), `pyproject.toml` + `uv.lock` (uv), `compose.yaml` (PostGIS, Dekart), CI with pyramid check + ontology check, empty contexts.
+2. ✅ **Catalog core** — value objects, Space, Claim, ConfidencePolicy, OfferingPolicy, ResolutionPolicy (all unit tested).
+3. ✅ **OSM slice** — Overpass adapter, opening-hours → TimeWindow, export CSV/JSON/GeoJSON. First run (2026-10-12): 3,339 OSM objects → 3,309 facilities → 530 with an evening/night offering.
 4. **Map** — MapLibre page with filters (offering kind, window, confidence); GeoSQL + Dekart QA views (coverage per source, resolution clusters, Bezirk boundaries).
 5. **Google Maps slice** — Playwright fetcher, matching, review adapter.
 6. **Laya extraction** — classifier adapter, QuestionSet v1, gold set + eval.

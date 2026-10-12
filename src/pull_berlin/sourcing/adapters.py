@@ -22,7 +22,12 @@ class HttpFetcher:
     rate limits and server errors with linear backoff."""
 
     def __init__(
-        self, min_interval_s: float = 2.0, retries: int = 3, backoff_s: float = 30.0, timeout_s: float = 240.0
+        # Overpass answers 504 in bursts when busy; frequent short retries recover faster than long waits.
+        self,
+        min_interval_s: float = 2.0,
+        retries: int = 8,
+        backoff_s: float = 5.0,
+        timeout_s: float = 240.0,
     ) -> None:
         self._min_interval_s = min_interval_s
         self._retries = retries

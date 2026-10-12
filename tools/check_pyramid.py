@@ -14,7 +14,18 @@ MAX_E2E_SHARE = 0.10
 
 def count(tier: str) -> int:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "--collect-only", "-q", "-m", tier],
+        # Override addopts so its -q does not stack into -qq (which hides per-test ids).
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "--collect-only",
+            "-q",
+            "-o",
+            "addopts=--import-mode=importlib",
+            "-m",
+            tier,
+        ],
         capture_output=True,
         text=True,
     )
