@@ -1,0 +1,32 @@
+# Evaluation data
+
+`gold/*.jsonl` — labelled passages, one JSON object per line:
+`{"url", "text", "labels": {"is_hireable_for_private_events": true|false|null, ...}, "labelled_by"}`.
+A label says whether **the text itself states** the proposition; `null` means not judged.
+
+- `gold/silver-2026-10-12.jsonl`: 50 passages from 10 Berlin venue/community sites, labelled by Claude
+  from the first ~700 characters of each passage. **Silver, not gold: needs human review** before
+  numbers from it are trusted or used for fine-tuning. Few positives for `operates_past_midnight`.
+
+Workflow: `uv run python tools/export_passages.py` writes unlabelled candidates to `eval/candidates.jsonl`
+(ignored by git); label them, move finished lines into `gold/`, then
+`uv run --extra laya python tools/eval_classifiers.py`.
+
+Source texts are excerpts of public websites, kept for evaluation only.
+
+## Results — 2026-10-12, silver set, `is_hireable_for_private_events` (47 judged, 16 positive)
+
+| classifier | precision | recall | F1 | Brier |
+|---|---|---|---|---|
+| keywords (`keywords-v1`) | **1.00** | 0.69 | **0.81** | **0.109** |
+| Laya 0.4.6 multilingual, zero-shot | 0.41 | 1.00 | 0.58 | 0.385 |
+| Laya + lexical gate | 0.55 | 1.00 | 0.71 | 0.236 |
+| Laya, multiple-choice "what does the text offer" | 0.67 | 0.12 | 0.21 | — |
+
+Findings:
+- Zero-shot Laya over-claims and is not calibrated on web text (p≈0.999 "hireable" for bank pension and
+  home-care pages); raising the threshold does not fix it (best F1 0.73 at 0.8 with the gate).
+- The lexical gate helps (Brier 0.385 → 0.236) and costs no recall.
+- Keywords are the default classifier until a fine-tuned Laya beats them on a human-reviewed set.
+- Next: review/extend the labels to a few hundred passages, fine-tune Laya (its Apple Silicon script),
+  re-run this table. Other propositions need more positives before their numbers mean anything.

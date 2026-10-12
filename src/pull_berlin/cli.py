@@ -45,9 +45,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     pull_cmd.add_argument(
         "--classifier",
         choices=("laya", "laya-ungated", "keywords"),
-        default="laya",
-        help="how website text is read: Laya behind a lexical gate (default; needs `uv sync --extra laya`), "
-        "Laya on every passage, or the keyword baseline",
+        default="keywords",
+        help="how website text is read: keyword baseline (default; best measured precision), Laya behind a "
+        "lexical gate, or Laya on every passage (Laya needs `uv sync --extra laya`); see eval/README.md",
     )
     pull_cmd.add_argument("--laya-batch-size", type=int, default=4, help="texts per Laya forward pass")
     args = parser.parse_args(argv)

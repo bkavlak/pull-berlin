@@ -22,8 +22,8 @@ The model is built around `Space` + `Offering` so that later use cases (coworkin
 | D3 | Time windows | `Evening` = available from 18:00; `Night` = available past 00:00 |
 | D4 | Geography | Berlin city limits (12 Bezirke) |
 | D5 | Run mode | One-off / manual runs; catalog keeps latest state; raw fetches are cached |
-| D6 | Local model | [Laya](https://github.com/NandhaKishorM/laya) (Apache-2.0) for typed decisions with calibrated probabilities |
-| D7 | Google Maps | Browser scraping (Playwright) behind the `Fetcher` port — ToS risk accepted by owner; swappable for Places API |
+| D6 | Local model | [Laya](https://github.com/NandhaKishorM/laya) (Apache-2.0) behind the `TextClassifier` port. Measured 2026-10-12: zero-shot it loses to the keyword baseline on venue-site text (F1 0.71 vs 0.81, Brier 0.236 vs 0.109), so keywords are the default until a fine-tuned Laya wins on human-reviewed labels — see `eval/README.md` |
+| D7 | Google Maps | Signed-out Google Maps shows a *limited view* without reviews (verified 2026-10-12), so scraping reviews is not possible without a Google login. Parked; venue websites are used for free text instead. Options: owner's own login, Places API (5 reviews/place), other review sites |
 | D8 | Output | CSV, JSON (+ GeoJSON), and a MapLibre web map on OSM-based tiles (product). Dekart via GeoSQL for analysis/QA maps |
 | D9 | First slice | OSM Overpass (base list) + Google Maps reviews (enrichment via Laya) |
 | D10 | Foundation | Parallel formal ontology: BFO 2020 → CCO → `pb:` with GeoSPARQL/PROV/SKOS, applying Smith & Mark (1998). Domain model specializes it. See [`ontology.md`](ontology.md) |
@@ -225,9 +225,10 @@ Adding a source = new package under `sources/` + registry entry + fixtures. Addi
 2. ✅ **Catalog core** — value objects, Space, Claim, ConfidencePolicy, OfferingPolicy, ResolutionPolicy (all unit tested).
 3. ✅ **OSM slice** — Overpass adapter, opening-hours → TimeWindow, export CSV/JSON/GeoJSON. First run (2026-10-12): 3,339 OSM objects → 3,309 facilities → 530 with an evening/night offering.
 4. **Map** — MapLibre page with filters (offering kind, window, confidence); GeoSQL + Dekart QA views (coverage per source, resolution clusters, Bezirk boundaries).
-5. **Google Maps slice** — Playwright fetcher, matching, review adapter.
-6. **Laya extraction** — classifier adapter, QuestionSet v1, gold set + eval.
-7. Next sources: Resident Advisor, Spacebase, venue own sites.
+5. ✅ **Venue websites + extraction** — VenueSiteSource, QuestionSet v1, keyword baseline, Laya adapter with lexical gate, classification cache, eval tooling, silver set (50 passages).
+6. **Laya fine-tuning** — human-reviewed labels (a few hundred passages), fine-tune on Apple Silicon, adopt if it beats keywords.
+7. **Google Maps reviews** — only with one of the D7 options.
+8. Next sources: Resident Advisor (hosting evidence), Spacebase (hire evidence).
 
 ---
 

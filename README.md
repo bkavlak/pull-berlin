@@ -16,6 +16,8 @@ uv sync                           # dependencies into .venv
 uv run pull-berlin pull           # fetch sources -> data/out/facilities.{csv,json,geojson}
 uv run pull-berlin pull --offline # rebuild exports from data/cache without network
 uv run pull-berlin pull --all     # also keep facilities without an evening/night offering
+uv run pull-berlin pull --sites   # also read each facility's own website (keyword classifier)
+uv sync --extra laya && uv run pull-berlin pull --sites --classifier laya   # Laya instead (see eval/)
 ```
 
 `data/cache/` keeps every raw source response, so reruns are cheap and test fixtures are recorded from it.
@@ -29,6 +31,6 @@ uv run ruff check . && uv run mypy                # lint + strict types
 uv run python ontology/tools/check_ontology.py    # HermiT consistency + SHACL (needs Java)
 ```
 
-Status: OpenStreetMap slice works end to end. Next sources: Google Maps reviews with Laya, then rental marketplaces and event listings.
+Status: OpenStreetMap + venue websites work end to end. Laya is integrated and evaluated (`eval/README.md`); zero-shot it does not yet beat the keyword baseline, so fine-tuning on reviewed labels is next.
 
 License: [MIT](LICENSE).
