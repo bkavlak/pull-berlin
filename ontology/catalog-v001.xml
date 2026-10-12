@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Lets Protégé / ROBOT resolve imports to the pinned local copies -->
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+  <uri name="http://purl.obolibrary.org/obo/bfo/2020/bfo-core.ttl"            uri="imports/bfo-core.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/AgentOntology"              uri="imports/cco-AgentOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/ArtifactOntology"           uri="imports/cco-ArtifactOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/EventOntology"              uri="imports/cco-EventOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/ExtendedRelationOntology"   uri="imports/cco-ExtendedRelationOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/FacilityOntology"           uri="imports/cco-FacilityOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/GeospatialOntology"         uri="imports/cco-GeospatialOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/InformationEntityOntology"  uri="imports/cco-InformationEntityOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/QualityOntology"            uri="imports/cco-QualityOntology.ttl"/>
+  <uri name="https://www.commoncoreontologies.org/TimeOntology"               uri="imports/cco-TimeOntology.ttl"/>
+  <uri name="https://w3id.org/pull-berlin/ontology"                           uri="pull-berlin.ttl"/>
+</catalog>

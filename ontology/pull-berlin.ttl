@@ -1,0 +1,280 @@
+@prefix :      <https://w3id.org/pull-berlin/ontology/> .
+@prefix pb:    <https://w3id.org/pull-berlin/ontology/> .
+@prefix obo:   <http://purl.obolibrary.org/obo/> .
+@prefix cco:   <https://www.commoncoreontologies.org/> .
+@prefix geo:   <http://www.opengis.net/ont/geosparql#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+#################################################################
+#  pull-berlin core ontology
+#  Foundation: BFO 2020 (ISO/IEC 21838-2) via Common Core Ontologies 2026-08-13.
+#  Geographic stance: Smith & Mark (1998), "Ontology and Geographic Kinds":
+#    - bona fide vs fiat boundaries and objects
+#    - vagueness lives in concepts/classifications, not in the world
+#    - geographic categories are radial (prototype-based), scale- and boundary-sensitive
+#  The Python domain model (src/pull_berlin) specializes these terms; see docs/ontology.md.
+#################################################################
+
+<https://w3id.org/pull-berlin/ontology> a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/pull-berlin/ontology/0.1.0> ;
+    owl:versionInfo "0.1.0" ;
+    dcterms:title "pull-berlin ontology"@en ;
+    dcterms:description "BFO/CCO-based ontology of Berlin spaces and the ways they can be used, starting with evening and night event use."@en ;
+    dcterms:references <https://www.researchgate.net/publication/28762392_Ontology_and_Geographic_Kinds> ;
+    owl:imports <http://purl.obolibrary.org/obo/bfo/2020/bfo-core.ttl> ,
+                <https://www.commoncoreontologies.org/FacilityOntology> ,
+                <https://www.commoncoreontologies.org/GeospatialOntology> ,
+                <https://www.commoncoreontologies.org/AgentOntology> ,
+                <https://www.commoncoreontologies.org/EventOntology> ,
+                <https://www.commoncoreontologies.org/InformationEntityOntology> ,
+                <https://www.commoncoreontologies.org/TimeOntology> .
+
+#################################################################
+#  Annotation properties
+#################################################################
+
+pb:boundaryCharacter a owl:AnnotationProperty ;
+    rdfs:label "boundary character"@en ;
+    skos:definition "Whether instances of the class are delimited by bona fide boundaries (physical discontinuities), fiat boundaries (human demarcation) or both, in the sense of Smith & Mark (1998)."@en .
+
+pb:domainModelType a owl:AnnotationProperty ;
+    rdfs:label "domain model type"@en ;
+    skos:definition "Fully qualified Python name of the domain model type that specializes this term. Checked by the ontology contract test."@en .
+
+#################################################################
+#  Spaces  (continuants)
+#################################################################
+
+pb:EventSpace a owl:Class ;
+    rdfs:subClassOf obo:BFO_0000029 ;               # bfo:site
+    rdfs:label "Event Space"@en , "Veranstaltungsraum"@de ;
+    skos:definition "A Site that is provided by some Material Artifact and that can accommodate a gathering of Persons participating in some Planned Act."@en ;
+    skos:scopeNote "The space is the immaterial site (the hall, the dance floor, the courtyard), not the building. Granularity matters (Smith & Mark: categorization is boundary-sensitive): a building may provide several Event Spaces."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.space.Space" .
+
+pb:EnclosedEventSpace a owl:Class ;
+    rdfs:subClassOf pb:EventSpace ;
+    owl:disjointWith pb:OpenAirEventSpace ;
+    rdfs:label "Enclosed Event Space"@en ;
+    skos:definition "An Event Space whose boundaries wholly coincide with boundaries of Material Entities, such as walls, floor and ceiling."@en ;
+    pb:boundaryCharacter "bona fide" ;
+    skos:example "a club's main hall; a loft; a gallery room"@en .
+
+pb:OpenAirEventSpace a owl:Class ;
+    rdfs:subClassOf pb:EventSpace ;
+    rdfs:label "Open-Air Event Space"@en ;
+    skos:definition "An Event Space at least one of whose boundaries is a fiat boundary not coinciding with any Material Entity."@en ;
+    pb:boundaryCharacter "bona fide and fiat" ;
+    skos:example "a beer garden; a rooftop; a courtyard; a riverside open-air area"@en .
+
+pb:providesSite a owl:ObjectProperty ;
+    rdfs:label "provides site"@en ;
+    rdfs:domain obo:BFO_0000040 ;                   # bfo:material entity
+    rdfs:range  obo:BFO_0000029 ;                   # bfo:site
+    owl:inverseOf pb:siteProvidedBy ;
+    skos:definition "x provides site y iff y is a Site whose boundaries coincide wholly or partly with boundaries of x, or whose location is determined in relation to x."@en .
+
+pb:siteProvidedBy a owl:ObjectProperty ;
+    rdfs:label "site provided by"@en .
+
+pb:operates a owl:ObjectProperty ;
+    rdfs:label "operates"@en ;
+    rdfs:domain cco:ont00001017 ;                   # cco:Agent
+    rdfs:range  cco:ont00000995 ;                   # cco:Material Artifact
+    skos:definition "x operates y iff Agent x controls the use of Material Artifact y and is responsible for the Planned Acts that occur in the Sites y provides."@en .
+
+#################################################################
+#  Ways of use  (realizable entities)  ->  domain: Offering
+#################################################################
+
+pb:SpaceUseRole a owl:Class ;
+    rdfs:subClassOf obo:BFO_0000023 ;               # bfo:role
+    rdfs:label "Space Use Role"@en ;
+    skos:definition "A Role that inheres in a Material Artifact in virtue of the Agent that operates it making some Event Space it provides available for some kind of Planned Act."@en ;
+    skos:scopeNote "Extension point. New use cases (coworking, rehearsal, sports) are new subclasses."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.offering.Offering" .
+
+pb:EventHireRole a owl:Class ;
+    rdfs:subClassOf pb:SpaceUseRole ;
+    rdfs:label "Event Hire Role"@en , "Vermietung für Veranstaltungen"@de ;
+    skos:definition "A Space Use Role that is realized in an Act of Facility Use or an Act of Renting in which an Agent other than the operator uses an Event Space for that Agent's own planned event."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.offering.OfferingKind.EVENT_HIRE" .
+
+pb:EventHostingRole a owl:Class ;
+    rdfs:subClassOf pb:SpaceUseRole ;
+    rdfs:label "Event Hosting Role"@en ;
+    skos:definition "A Space Use Role that is realized in Acts of Entertainment organized by the operator and occurring in an Event Space, which members of the public attend."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.offering.OfferingKind.EVENT_HOSTING" .
+
+pb:realizableDuring a owl:ObjectProperty ;
+    rdfs:label "realizable during"@en ;
+    rdfs:domain pb:SpaceUseRole ;
+    rdfs:range  pb:TimeWindow ;
+    skos:definition "r realizable during w iff the operator makes r available for realization in processes that occupy temporal regions falling under daily time window w."@en .
+
+#################################################################
+#  Recurring time windows  (classification, not temporal regions)
+#################################################################
+
+pb:TimeWindow a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Time Window"@en ;
+    skos:definition "A daily recurring band of local clock time (Europe/Berlin) used to classify the temporal regions in which Space Use Roles are realized."@en ;
+    skos:scopeNote "Not a bfo:temporal region: a recurring window is a classification of many temporal regions."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.values.TimeWindow" .
+
+pb:TimeWindowScheme a skos:ConceptScheme ; rdfs:label "Time windows"@en .
+
+pb:Evening a pb:TimeWindow , skos:Concept ;
+    skos:inScheme pb:TimeWindowScheme ;
+    skos:prefLabel "Evening"@en , "Abend"@de ;
+    skos:definition "The time window from 18:00 local time until 00:00."@en .
+
+pb:Night a pb:TimeWindow , skos:Concept ;
+    skos:inScheme pb:TimeWindowScheme ;
+    skos:prefLabel "Night"@en , "Nacht"@de ;
+    skos:definition "The time window from 00:00 local time until 06:00."@en .
+
+#################################################################
+#  Radial space categories  (Smith & Mark: prototype-based, graded)
+#################################################################
+
+pb:SpaceCategory a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Space Category"@en ;
+    skos:definition "A prototype-based category under which Event Spaces fall to some degree."@en ;
+    skos:scopeNote "Deliberately NOT an OWL class hierarchy of spaces: membership is graded and culture-dependent, so it is recorded in Space Category Assignments with a degree."@en .
+
+pb:SpaceCategoryScheme a skos:ConceptScheme ; rdfs:label "Space categories"@en .
+
+pb:Club            a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "club"@en ;
+    skos:definition "Prototype: a space with sound system and dance floor, operating mainly at night with DJ or live music programs."@en .
+pb:Bar             a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "bar"@en ;
+    skos:definition "Prototype: a space centred on a counter serving drinks, with seating, open in the evening."@en .
+pb:EventHall       a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "event hall"@en ;
+    skos:definition "Prototype: a large flexible room rented out for conferences, parties and weddings, without own daily program."@en .
+pb:Loft            a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "loft"@en ;
+    skos:definition "Prototype: a converted industrial or upper-floor open-plan room rented for private events and shoots."@en .
+pb:Gallery         a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "gallery"@en ;
+    skos:definition "Prototype: an exhibition room with white walls that also hosts openings and evening events."@en .
+pb:Restaurant      a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "restaurant"@en ;
+    skos:definition "Prototype: a space serving meals at tables, possibly with a separately bookable room."@en .
+pb:CulturalCentre  a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "cultural centre"@en ;
+    skos:definition "Prototype: a multi-room venue with a program of concerts, theatre, readings and community events."@en .
+pb:OtherCategory   a pb:SpaceCategory ; skos:inScheme pb:SpaceCategoryScheme ; skos:prefLabel "other"@en ;
+    skos:definition "Residual category for spaces far from every prototype above."@en .
+
+#################################################################
+#  Geography of Berlin  (fiat objects)
+#################################################################
+
+pb:Bezirk a owl:Class ;
+    rdfs:subClassOf cco:ont00000460 ;               # cco:Local Administrative Region
+    rdfs:label "Bezirk"@de , "Berlin borough"@en ;
+    skos:definition "A Local Administrative Region that is one of the twelve administrative divisions of the City of Berlin."@en ;
+    pb:boundaryCharacter "fiat" .
+
+pb:Berlin a cco:ont00000887 , owl:NamedIndividual ;  # cco:City
+    rdfs:label "Berlin"@de ;
+    pb:boundaryCharacter "fiat" ;
+    skos:scopeNote "Scope boundary of the catalog. Fiat object in the sense of Smith & Mark: its Landesgrenze is a legal demarcation."@en .
+
+#################################################################
+#  Information about spaces  (generically dependent continuants)
+#################################################################
+
+pb:InformationSource a owl:Class ;
+    rdfs:subClassOf cco:ont00000958 ;               # cco:Information Content Entity
+    rdfs:label "Information Source"@en ;
+    skos:definition "An Information Content Entity that is a body of published content maintained by some Agent and consulted as one unit, such as a map service, a listing site or a venue's website."@en ;
+    pb:domainModelType "pull_berlin.sourcing.domain.source.Source" .
+
+pb:hasSourceKind a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "has source kind"@en ;
+    rdfs:domain pb:InformationSource ;
+    rdfs:range  pb:SourceKind .
+
+pb:SourceKind a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Source Kind"@en ;
+    skos:definition "A characteristic category of Information Source, determining which kinds of Claims it supports well."@en ;
+    pb:domainModelType "pull_berlin.sourcing.domain.source_kind.SourceKind" .
+
+pb:SourceKindScheme a skos:ConceptScheme ; rdfs:label "Source kinds"@en .
+pb:OpenGeodata        a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "open geodata"@en ; skos:example "OpenStreetMap"@en .
+pb:MapsAndReviews     a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "maps and reviews"@en ; skos:example "Google Maps"@en .
+pb:RentalMarketplace  a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "rental marketplace"@en ; skos:example "Spacebase"@en .
+pb:EventListing       a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "event listing"@en ; skos:example "Resident Advisor"@en .
+pb:VenueOwnSite       a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "venue own site"@en .
+pb:OfficialCommunity  a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "official or community register"@en ; skos:example "Clubcommission Berlin"@en .
+pb:Social             a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "social media"@en .
+
+pb:Observation a owl:Class ;
+    rdfs:subClassOf cco:ont00000853 ;               # cco:Descriptive ICE
+    rdfs:label "Observation"@en ;
+    skos:definition "A Descriptive Information Content Entity that is derived from one document of one Information Source and that describes a single candidate Material Artifact or Event Space."@en ;
+    pb:domainModelType "pull_berlin.sourcing.domain.observation.Observation" .
+
+pb:Evidence a owl:Class ;
+    rdfs:subClassOf cco:ont00000853 ;
+    rdfs:label "Evidence"@en ;
+    skos:definition "A Descriptive Information Content Entity excerpted from some Observation and used to support or oppose a Claim."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.claim.Evidence" .
+
+pb:UserReview a owl:Class ;
+    rdfs:subClassOf pb:Evidence ;
+    rdfs:label "User Review"@en ;
+    skos:definition "Evidence that was authored by a Person reporting their own experience of an Event Space or the Material Artifact providing it."@en .
+
+pb:Claim a owl:Class ;
+    rdfs:subClassOf cco:ont00000853 ;
+    rdfs:label "Claim"@en ;
+    skos:definition "A Descriptive Information Content Entity that asserts that some Event Space or Material Artifact has some characteristic, with a degree of confidence computed from its Evidence."@en ;
+    skos:scopeNote "Where vagueness lives (Smith & Mark): the world is crisp, our Claims about it carry degrees."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.claim.Claim" .
+
+pb:SpaceCategoryAssignment a owl:Class ;
+    rdfs:subClassOf pb:Claim ;
+    rdfs:label "Space Category Assignment"@en ;
+    skos:definition "A Claim that an Event Space falls under some Space Category to the degree given by its confidence."@en .
+
+pb:assignsCategory a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "assigns category"@en ;
+    rdfs:domain pb:SpaceCategoryAssignment ;
+    rdfs:range  pb:SpaceCategory .
+
+pb:supportedBy a owl:ObjectProperty ;
+    rdfs:label "supported by"@en ;
+    rdfs:domain pb:Claim ;
+    rdfs:range  pb:Evidence .
+
+pb:opposedBy a owl:ObjectProperty ;
+    rdfs:label "opposed by"@en ;
+    rdfs:domain pb:Claim ;
+    rdfs:range  pb:Evidence .
+
+pb:confidence a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "confidence"@en ;
+    rdfs:domain pb:Claim ;
+    rdfs:range  xsd:decimal ;
+    skos:definition "The catalog's degree of belief in a Claim, between 0 and 1."@en .
+
+pb:fromSource a owl:ObjectProperty ;
+    rdfs:subPropertyOf prov:wasDerivedFrom ;
+    rdfs:label "from source"@en ;
+    rdfs:domain pb:Observation ;
+    rdfs:range  pb:InformationSource .
+
+pb:excerptedFrom a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:subPropertyOf prov:wasDerivedFrom ;
+    rdfs:label "excerpted from"@en ;
+    rdfs:domain pb:Evidence ;
+    rdfs:range  pb:Observation ;
+    skos:definition "e excerpted from o iff Evidence e reproduces content of Observation o."@en ;
+    skos:scopeNote "Used instead of bfo:continuant part of, whose axioms in BFO 2020 + CCO make part-hood between two ICEs inconsistent (verified with HermiT)."@en .

@@ -1,0 +1,50 @@
+# Fictional worked example. Every pattern the pipeline emits appears here once.
+@prefix pb:   <https://w3id.org/pull-berlin/ontology/> .
+@prefix ex:   <https://w3id.org/pull-berlin/data/example/> .
+@prefix obo:  <http://purl.obolibrary.org/obo/> .
+@prefix cco:  <https://www.commoncoreontologies.org/> .
+@prefix geo:  <http://www.opengis.net/ont/geosparql#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# --- the material thing (bona fide object) and its operator
+ex:building-1   a cco:ont00000641 ;                         # Entertainment Facility
+    obo:BFO_0000171 ex:location-1 , pb:FriedrichshainKreuzberg ;
+    pb:providesSite ex:hall-1 , ex:yard-1 ;
+    obo:BFO_0000196 ex:hire-role-1 , ex:hosting-role-1 .   # bearer of
+ex:operator-1   a cco:ont00001180 ; pb:operates ex:building-1 .   # Organization
+
+# --- the spaces (sites): one bona fide, one partly fiat
+ex:hall-1 a pb:EnclosedEventSpace ; pb:siteProvidedBy ex:building-1 ; cco:ont00001879 ex:name-1 .
+ex:yard-1 a pb:OpenAirEventSpace  ; pb:siteProvidedBy ex:building-1 ; cco:ont00001879 ex:name-2 .
+ex:name-1 a cco:ont00000003 .
+ex:name-1-ibe a cco:ont00000253 ; obo:BFO_0000101 ex:name-1 ; cco:ont00001765 "Beispielhalle – Main Hall" .   # IBE is carrier of ICE
+ex:name-2 a cco:ont00000003 .
+ex:name-2-ibe a cco:ont00000253 ; obo:BFO_0000101 ex:name-2 ; cco:ont00001765 "Beispielhalle – Hof" .
+
+# --- where (fiat point inside fiat Bezirk inside fiat City)
+ex:location-1 a cco:ont00000487 ; geo:hasGeometry ex:geom-1 .
+ex:geom-1 geo:asWKT "POINT(13.4401 52.4988)"^^geo:wktLiteral .
+
+# --- ways of use (roles) -> domain Offerings
+ex:hire-role-1    a pb:EventHireRole    ; obo:BFO_0000197 ex:building-1 ; pb:realizableDuring pb:Evening , pb:Night .
+ex:hosting-role-1 a pb:EventHostingRole ; obo:BFO_0000197 ex:building-1 ; pb:realizableDuring pb:Night .
+
+# --- information side: source -> observation -> evidence -> claim
+ex:src-gmaps a pb:InformationSource ; pb:hasSourceKind pb:MapsAndReviews ; rdfs:label "Google Maps" .
+ex:obs-1 a pb:Observation ; pb:fromSource ex:src-gmaps ;
+    cco:ont00001808 ex:building-1 ;                          # is about
+    prov:generatedAtTime "2026-10-12T18:00:00+02:00"^^xsd:dateTime .
+ex:ev-1 a pb:UserReview ; pb:excerptedFrom ex:obs-1 ;
+    cco:ont00001808 ex:hall-1 .
+# CCO pattern: literal values sit on the Information Bearing Entity that carries the ICE.
+ex:obs-1-ibe a cco:ont00000253 ; obo:BFO_0000101 ex:obs-1 ;
+    cco:ont00001768 "https://maps.example/place/abc"^^xsd:anyURI .
+ex:ev-1-ibe a cco:ont00000253 ; obo:BFO_0000101 ex:ev-1 ;
+    cco:ont00001765 "Wir haben den großen Saal für unseren 30. gemietet, Party ging bis 4 Uhr." .
+
+ex:claim-hire-1 a pb:Claim ; cco:ont00001808 ex:hire-role-1 ;
+    pb:supportedBy ex:ev-1 ; pb:confidence "0.87"^^xsd:decimal .
+ex:claim-cat-1 a pb:SpaceCategoryAssignment ; cco:ont00001808 ex:hall-1 ;
+    pb:assignsCategory pb:EventHall ; pb:supportedBy ex:ev-1 ; pb:confidence "0.64"^^xsd:decimal .

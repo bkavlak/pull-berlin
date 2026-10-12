@@ -1,0 +1,21 @@
+@prefix pb:  <https://w3id.org/pull-berlin/ontology/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+
+<https://w3id.org/pull-berlin/ontology/berlin-regions> a owl:Ontology ;
+    owl:imports <https://w3id.org/pull-berlin/ontology> .
+
+# The twelve Bezirke, each a fiat continuant part of Berlin (BFO_0000176 = continuant part of).
+pb:Mitte                     a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Mitte"@de ;                     obo:BFO_0000176 pb:Berlin .
+pb:FriedrichshainKreuzberg   a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Friedrichshain-Kreuzberg"@de ;  obo:BFO_0000176 pb:Berlin .
+pb:Pankow                    a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Pankow"@de ;                    obo:BFO_0000176 pb:Berlin .
+pb:CharlottenburgWilmersdorf a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Charlottenburg-Wilmersdorf"@de ; obo:BFO_0000176 pb:Berlin .
+pb:Spandau                   a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Spandau"@de ;                   obo:BFO_0000176 pb:Berlin .
+pb:SteglitzZehlendorf        a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Steglitz-Zehlendorf"@de ;       obo:BFO_0000176 pb:Berlin .
+pb:TempelhofSchoeneberg      a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Tempelhof-Schöneberg"@de ;      obo:BFO_0000176 pb:Berlin .
+pb:Neukoelln                 a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Neukölln"@de ;                  obo:BFO_0000176 pb:Berlin .
+pb:TreptowKoepenick          a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Treptow-Köpenick"@de ;          obo:BFO_0000176 pb:Berlin .
+pb:MarzahnHellersdorf        a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Marzahn-Hellersdorf"@de ;       obo:BFO_0000176 pb:Berlin .
+pb:Lichtenberg               a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Lichtenberg"@de ;               obo:BFO_0000176 pb:Berlin .
+pb:Reinickendorf             a pb:Bezirk , owl:NamedIndividual ; rdfs:label "Reinickendorf"@de ;             obo:BFO_0000176 pb:Berlin .

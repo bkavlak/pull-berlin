@@ -1,0 +1,61 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix pb:   <https://w3id.org/pull-berlin/ontology/> .
+@prefix pbs:  <https://w3id.org/pull-berlin/shapes/> .
+@prefix obo:  <http://purl.obolibrary.org/obo/> .
+@prefix cco:  <https://www.commoncoreontologies.org/> .
+@prefix geo:  <http://www.opengis.net/ont/geosparql#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Closed-world rules for data the pipeline publishes as RDF.
+# OWL says what things ARE; these shapes say what our DATA must contain.
+
+pbs:EventSpaceShape a sh:NodeShape ;
+    sh:targetClass pb:EventSpace ;
+    sh:property [ sh:path pb:siteProvidedBy ; sh:minCount 1 ; sh:class cco:ont00000995 ;
+                  sh:message "An Event Space must be provided by at least one Material Artifact." ] ;
+    sh:property [ sh:path cco:ont00001879 ; sh:minCount 1 ;            # designated by
+                  sh:message "An Event Space must be designated by a name." ] .
+
+pbs:MaterialArtifactShape a sh:NodeShape ;
+    sh:targetObjectsOf pb:siteProvidedBy ;
+    sh:property [ sh:path obo:BFO_0000171 ; sh:minCount 1 ;           # located in
+                  sh:qualifiedValueShape [ sh:class cco:ont00000487 ] ; sh:qualifiedMinCount 1 ;
+                  sh:message "The providing artifact must be located in a Geospatial Location." ] ;
+    sh:property [ sh:path obo:BFO_0000171 ;
+                  sh:qualifiedValueShape [ sh:class pb:Bezirk ] ; sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ;
+                  sh:message "The providing artifact must be located in exactly one Berlin Bezirk." ] .
+
+pbs:GeospatialLocationShape a sh:NodeShape ;
+    sh:targetClass cco:ont00000487 ;
+    sh:property [ sh:path ( geo:hasGeometry geo:asWKT ) ; sh:minCount 1 ; sh:datatype geo:wktLiteral ;
+                  sh:message "A Geospatial Location must have a WKT geometry." ] .
+
+pbs:ClaimShape a sh:NodeShape ;
+    sh:targetClass pb:Claim ;
+    sh:property [ sh:path pb:confidence ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ;
+                  sh:minInclusive 0 ; sh:maxInclusive 1 ] ;
+    sh:property [ sh:path pb:supportedBy ; sh:minCount 1 ;
+                  sh:message "A Claim without Evidence cannot exist." ] ;
+    sh:property [ sh:path cco:ont00001808 ; sh:minCount 1 ;             # is about
+                  sh:message "A Claim must be about something." ] .
+
+pbs:SpaceUseRoleShape a sh:NodeShape ;
+    sh:targetClass pb:SpaceUseRole ;
+    sh:property [ sh:path obo:BFO_0000197 ; sh:minCount 1 ; sh:maxCount 1 ; sh:class cco:ont00000995 ;   # inheres in
+                  sh:message "A Space Use Role inheres in exactly one Material Artifact." ] ;
+    sh:property [ sh:path pb:realizableDuring ; sh:class pb:TimeWindow ] .
+
+pbs:EvidenceShape a sh:NodeShape ;
+    sh:targetClass pb:Evidence ;
+    sh:property [ sh:path ( [ sh:inversePath obo:BFO_0000101 ] cco:ont00001765 ) ; sh:minCount 1 ;   # carrier -> has text value
+                  sh:message "Evidence must carry its text via an Information Bearing Entity." ] ;
+    sh:property [ sh:path pb:excerptedFrom ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pb:Observation ;
+                  sh:message "Evidence must be excerpted from exactly one Observation (provenance)." ] .
+
+pbs:ObservationShape a sh:NodeShape ;
+    sh:targetClass pb:Observation ;
+    sh:property [ sh:path pb:fromSource ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pb:InformationSource ] ;
+    sh:property [ sh:path prov:generatedAtTime ; sh:minCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ( [ sh:inversePath obo:BFO_0000101 ] cco:ont00001768 ) ; sh:minCount 1 ;   # carrier -> has URI value
+                  sh:message "An Observation must record the URI of the document it came from." ] .
