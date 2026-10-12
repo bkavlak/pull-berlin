@@ -18,6 +18,7 @@ uv run pull-berlin pull --offline # rebuild exports from data/cache without netw
 uv run pull-berlin pull --all     # also keep facilities without an evening/night offering
 uv run pull-berlin pull --sites   # also read each facility's own website (keyword classifier)
 uv sync --extra laya && uv run pull-berlin pull --sites --classifier laya   # Laya instead (see eval/)
+uv run pull-berlin serve          # map at http://127.0.0.1:8000/web/ (reads data/out/facilities.geojson)
 ```
 
 `data/cache/` keeps every raw source response, so reruns are cheap and test fixtures are recorded from it.
@@ -29,8 +30,9 @@ uv run pytest                                     # all tiers (unit / integratio
 uv run python tools/check_pyramid.py              # the suite must stay a pyramid
 uv run ruff check . && uv run mypy                # lint + strict types
 uv run python ontology/tools/check_ontology.py    # HermiT consistency + SHACL (needs Java)
+node --test web/*.test.js                         # map filter logic
 ```
 
-Status: OpenStreetMap + venue websites work end to end. Laya is integrated and evaluated (`eval/README.md`); zero-shot it does not yet beat the keyword baseline, so fine-tuning on reviewed labels is next.
+Status: OpenStreetMap + venue websites work end to end, with a filterable map (`web/`). Laya is integrated and evaluated (`eval/README.md`); zero-shot it does not yet beat the keyword baseline, so fine-tuning on reviewed labels is next.
 
 License: [MIT](LICENSE).

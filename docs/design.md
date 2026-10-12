@@ -224,7 +224,7 @@ Adding a source = new package under `sources/` + registry entry + fixtures. Addi
 1. ✅ **Skeleton** — `.tool-versions` (asdf), `pyproject.toml` + `uv.lock` (uv), `compose.yaml` (PostGIS, Dekart), CI with pyramid check + ontology check, empty contexts.
 2. ✅ **Catalog core** — value objects, Space, Claim, ConfidencePolicy, OfferingPolicy, ResolutionPolicy (all unit tested).
 3. ✅ **OSM slice** — Overpass adapter, opening-hours → TimeWindow, export CSV/JSON/GeoJSON. First run (2026-10-12): 3,339 OSM objects → 3,309 facilities → 530 with an evening/night offering.
-4. **Map** — MapLibre page with filters (offering kind, window, confidence); GeoSQL + Dekart QA views (coverage per source, resolution clusters, Bezirk boundaries).
+4. ✅ **Map** — `web/index.html` (MapLibre + OpenFreeMap): filters for offering, time window, category, confidence and name; `pull-berlin serve`. Still open: GeoSQL + Dekart QA views once PostGIS lands.
 5. ✅ **Venue websites + extraction** — VenueSiteSource, QuestionSet v1, keyword baseline, Laya adapter with lexical gate, classification cache, eval tooling, silver set (50 passages).
 6. **Laya fine-tuning** — human-reviewed labels (a few hundred passages), fine-tune on Apple Silicon, adopt if it beats keywords.
 7. **Google Maps reviews** — only with one of the D7 options.
