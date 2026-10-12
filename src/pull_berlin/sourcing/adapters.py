@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -34,6 +35,7 @@ class HttpFetcher:
         self._backoff_s = backoff_s
         self._timeout_s = timeout_s
         self._last_request_at: dict[str, float] = {}
+        self._lock = threading.Lock()
 
     def fetch(self, request: FetchRequest) -> RawDocument:
         last_error = ""
@@ -62,11 +64,14 @@ class HttpFetcher:
         return urllib.request.Request(request.url, data=data, headers=headers, method=request.method)
 
     def _wait_for_turn(self, url: str) -> None:
+        """Reserves this host's next slot under a lock, then sleeps outside it (other hosts go on)."""
         host = urllib.parse.urlsplit(url).netloc
-        elapsed = time.monotonic() - self._last_request_at.get(host, float("-inf"))
-        if elapsed < self._min_interval_s:
-            time.sleep(self._min_interval_s - elapsed)
-        self._last_request_at[host] = time.monotonic()
+        with self._lock:
+            now = time.monotonic()
+            slot = max(now, self._last_request_at.get(host, float("-inf")) + self._min_interval_s)
+            self._last_request_at[host] = slot
+        if slot > now:
+            time.sleep(slot - now)
 
 
 class CachingFetcher:
@@ -76,14 +81,21 @@ class CachingFetcher:
     FetchError — which is how e2e tests guarantee they never touch the internet.
     """
 
-    def __init__(self, cache_dir: Path, inner: Fetcher | None) -> None:
+    def __init__(self, cache_dir: Path, inner: Fetcher | None, retry_failed: bool = False) -> None:
         self._cache_dir = cache_dir
         self._inner = inner
+        self._retry_failed = retry_failed
 
     def fetch(self, request: FetchRequest) -> RawDocument:
         path = self._cache_dir / request.source_id / f"{request.fingerprint}.json"
         if path.exists():
             record = json.loads(path.read_text(encoding="utf-8"))
+            failed_before = "error" in record
+            if failed_before and (self._retry_failed is False or self._inner is None):
+                raise FetchError(
+                    f"failed earlier ({record['error']}); rerun with --retry-failed to try again"
+                )
+        if path.exists() and not failed_before:
             return RawDocument(
                 request.source_id,
                 record["url"],
@@ -93,7 +105,18 @@ class CachingFetcher:
         if self._inner is None:
             raise FetchError(f"offline and no recording for {request.url} ({path.name})")
 
-        document = self._inner.fetch(request)
+        try:
+            document = self._inner.fetch(request)
+        except FetchError as error:
+            if request.remember_failure:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                failure = {
+                    "url": request.url,
+                    "failed_at": datetime.now(timezone.utc).isoformat(),
+                    "error": str(error),
+                }
+                path.write_text(json.dumps(failure, ensure_ascii=False), encoding="utf-8")
+            raise
         path.parent.mkdir(parents=True, exist_ok=True)
         record = {
             "url": document.url,

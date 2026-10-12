@@ -55,6 +55,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=None,
         help="read websites only of these kinds of place, comma-separated (e.g. bar or bar,club)",
     )
+    pull_cmd.add_argument("--site-workers", type=int, default=8, help="websites visited in parallel")
+    pull_cmd.add_argument(
+        "--retry-failed", action="store_true", help="try websites again that failed in an earlier run"
+    )
     pull_cmd.add_argument("--laya-batch-size", type=int, default=4, help="texts per Laya forward pass")
     serve_cmd = commands.add_parser("serve", help="open the map: serve web/ and data/out/ on localhost")
     serve_cmd.add_argument("--port", type=int, default=8000)
@@ -62,7 +66,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "serve":
         return _serve(args.port)
 
-    fetcher = CachingFetcher(args.cache, None if args.offline else HttpFetcher())
+    fetcher = CachingFetcher(
+        args.cache, None if args.offline else HttpFetcher(), retry_failed=args.retry_failed
+    )
     try:
         result = pull(
             available_sources(),
@@ -72,6 +78,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             classifier=_classifier(args.classifier, args.cache, args.laya_batch_size) if args.sites else None,
             enrich_limit=args.site_limit,
             enrich_categories=_categories(args.site_categories),
+            enrich_workers=args.site_workers,
         )
     except FetchError as error:
         print(f"fetch failed: {error}", file=sys.stderr)

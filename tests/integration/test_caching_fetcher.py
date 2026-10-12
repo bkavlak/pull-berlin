@@ -10,14 +10,20 @@ from pull_berlin.sourcing.ports import FetchError
 
 from ..fakes import FakeFetcher
 
-REQUEST = FetchRequest(source_id="osm", url="https://example.org/q", method="POST", form=(("data", "query"),))
+REQUEST = FetchRequest(
+    source_id="site",
+    url="https://example.org/q",
+    method="POST",
+    form=(("data", "query"),),
+    remember_failure=True,
+)
 
 
 def test_first_fetch_goes_to_the_network_and_is_stored(tmp_path: Path) -> None:
     inner = FakeFetcher({REQUEST.url: "payload"})
     CachingFetcher(tmp_path, inner).fetch(REQUEST)
     assert len(inner.requests) == 1
-    assert list((tmp_path / "osm").glob("*.json"))
+    assert list((tmp_path / "site").glob("*.json"))
 
 
 def test_second_fetch_is_served_from_disk(tmp_path: Path) -> None:
@@ -37,3 +43,29 @@ def test_replayed_document_keeps_its_original_fetch_time(tmp_path: Path) -> None
 def test_offline_cache_miss_is_a_fetch_error(tmp_path: Path) -> None:
     with pytest.raises(FetchError, match="offline"):
         CachingFetcher(tmp_path, None).fetch(REQUEST)
+
+
+def test_a_failed_fetch_is_remembered_so_reruns_skip_it(tmp_path: Path) -> None:
+    inner = FakeFetcher({})  # every request fails
+    with pytest.raises(FetchError):
+        CachingFetcher(tmp_path, inner).fetch(REQUEST)
+    with pytest.raises(FetchError, match="earlier"):
+        CachingFetcher(tmp_path, inner).fetch(REQUEST)
+    assert len(inner.requests) == 1
+
+
+def test_retry_failed_tries_remembered_failures_again(tmp_path: Path) -> None:
+    with pytest.raises(FetchError):
+        CachingFetcher(tmp_path, FakeFetcher({})).fetch(REQUEST)
+    document = CachingFetcher(tmp_path, FakeFetcher({REQUEST.url: "back online"}), retry_failed=True).fetch(
+        REQUEST
+    )
+    assert document.content == "back online"
+
+
+def test_failures_of_essential_sources_are_not_remembered(tmp_path: Path) -> None:
+    essential = FetchRequest(source_id="osm", url="https://example.org/overpass")
+    with pytest.raises(FetchError):
+        CachingFetcher(tmp_path, FakeFetcher({})).fetch(essential)
+    document = CachingFetcher(tmp_path, FakeFetcher({essential.url: "ok now"})).fetch(essential)
+    assert document.content == "ok now"

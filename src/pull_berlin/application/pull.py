@@ -7,8 +7,9 @@ the classifier, absorb the resulting statements. Then assess and return views pl
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from pull_berlin.catalog.domain.assessment import AssessmentPolicy
@@ -51,6 +52,7 @@ def pull(
     extraction: ExtractionPolicy | None = None,
     enrich_limit: int | None = None,
     enrich_categories: set[SpaceCategory] | None = None,
+    enrich_workers: int = 1,
 ) -> PullResult:
     """`include_all=False` keeps only facilities with an evening/night offering (the catalog's scope).
     `enrich_limit` caps how many facilities (with a website, by id) are enriched — for samples.
@@ -88,16 +90,20 @@ def pull(
             if enrich_limit is not None
             else {f.id for f in with_site}
         )
+        tasks = [(f, e) for f in facilities if f.id in chosen for e in enrichers]
+        found_by_facility: dict[str, list[Observation]] = defaultdict(list)
+        # Visiting sites is network-bound and touches a different host per facility, so it runs in
+        # parallel; reading passages stays sequential (a model classifier is not thread-safe).
+        for facility_id, found in _observe_all(tasks, fetcher, enrich_workers):
+            if found is not None:
+                found_by_facility[facility_id].append(found)
+        attempted = len(tasks)
         enriched = []
         for facility in facilities:
-            if facility.id in chosen:
-                for enricher in enrichers:
-                    attempted += 1
-                    found = enricher.observe(facility, fetcher)
-                    if found is not None:
-                        observed += 1
-                        per_source[found.source_id] += 1
-                        facility = facility.absorb(reader.read(found))
+            for found in found_by_facility.get(facility.id, []):
+                observed += 1
+                per_source[found.source_id] += 1
+                facility = facility.absorb(reader.read(found))
             enriched.append(facility)
         facilities = enriched
 
@@ -116,6 +122,19 @@ def pull(
             passages_classified=reader.passages_classified,
         ),
     )
+
+
+def _observe_all(
+    tasks: list[tuple[Facility, Enricher]], fetcher: Fetcher, workers: int
+) -> list[tuple[str, Observation | None]]:
+    def visit(task: tuple[Facility, Enricher]) -> tuple[str, Observation | None]:
+        facility, enricher = task
+        return facility.id, enricher.observe(facility, fetcher)
+
+    if workers <= 1:
+        return [visit(task) for task in tasks]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return list(pool.map(visit, tasks))
 
 
 class _Reader:

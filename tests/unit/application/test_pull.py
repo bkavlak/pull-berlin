@@ -129,3 +129,34 @@ class TestEnrichingOnlySomeCategories:
         )
         visited = {r.url.split("/")[2] for r in fetcher.requests if r.source_id == "site"}
         assert visited == {"bar.example"}
+
+
+class TestParallelEnrichment:
+    def test_parallel_site_visits_give_the_same_catalog_as_sequential_ones(self) -> None:
+        from pull_berlin.extraction.keyword_classifier import KeywordClassifier
+        from pull_berlin.sources.venue_site import VenueSiteSource
+
+        bars = [
+            osm_node(
+                30 + i, f"Bar {i}", 52.50 + i * 0.01, 13.40, amenity="bar", website=f"https://bar{i}.example/"
+            )
+            for i in range(6)
+        ]
+        pages = {
+            f"https://bar{i}.example/": f"<p>Bar {i}: das Hinterzimmer ist für private Feiern mietbar.</p>"
+            for i in range(0, 6, 2)
+        }
+
+        def run(workers: int) -> list[tuple[str, tuple[str, ...]]]:
+            fetcher = FakeFetcher({ENDPOINT: overpass_json(*bars), **pages})
+            result = pull(
+                [OsmOverpassSource()],
+                fetcher,
+                enrichers=[VenueSiteSource()],
+                classifier=KeywordClassifier(),
+                include_all=True,
+                enrich_workers=workers,
+            )
+            return [(f.id, tuple(o.kind for o in f.offerings)) for f in result.facilities]
+
+        assert run(workers=4) == run(workers=1)

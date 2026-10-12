@@ -237,4 +237,6 @@ class VenueSiteSource:
         return parser
 
     def _request(self, url: str) -> FetchRequest:
-        return FetchRequest(source_id=self._source.id, url=url, timeout_s=_TIMEOUT_S, retries=1)
+        return FetchRequest(
+            source_id=self._source.id, url=url, timeout_s=_TIMEOUT_S, retries=1, remember_failure=True
+        )
