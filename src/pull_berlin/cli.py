@@ -47,6 +47,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         default="laya",
         help="how website text is read: Laya model (needs `uv sync --extra laya`) or keyword baseline",
     )
+    pull_cmd.add_argument("--laya-batch-size", type=int, default=4, help="texts per Laya forward pass")
     args = parser.parse_args(argv)
 
     fetcher = CachingFetcher(args.cache, None if args.offline else HttpFetcher())
@@ -56,7 +57,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             fetcher,
             include_all=args.all,
             enrichers=[VenueSiteSource()] if args.sites else [],
-            classifier=_classifier(args.classifier, args.cache) if args.sites else None,
+            classifier=_classifier(args.classifier, args.cache, args.laya_batch_size) if args.sites else None,
             enrich_limit=args.site_limit,
         )
     except FetchError as error:
@@ -79,12 +80,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def _classifier(name: str, cache: Path) -> TextClassifier:
+def _classifier(name: str, cache: Path, batch_size: int) -> TextClassifier:
     inner: TextClassifier
     if name == "laya":
         from pull_berlin.extraction.laya_classifier import LayaClassifier
 
-        inner = LayaClassifier()
+        inner = LayaClassifier(batch_size=batch_size)
     else:
         inner = KeywordClassifier()
     return CachingClassifier(inner, cache / "judgements" / f"{inner.model_id}.jsonl", QUESTION_SET_V1.version)

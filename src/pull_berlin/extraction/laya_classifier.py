@@ -55,7 +55,7 @@ class LayaClassifier:
         checkpoint: str = "multilingual",
         device: str | None = None,
         max_len: int = 2048,
-        batch_size: int = 8,
+        batch_size: int = 4,  # 4 x 2,048 tokens fits in ~3 GB RAM; raise it on bigger machines
     ) -> None:
         import laya  # optional dependency, imported only when the real model is wanted
 
