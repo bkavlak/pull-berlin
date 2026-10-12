@@ -14,6 +14,12 @@ SEEN: list[tuple[str, str, str]] = []
 
 
 class _Handler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        SEEN.append((self.path, self.headers["User-Agent"], ""))
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"<p>ok</p>")
+
     def do_POST(self) -> None:
         body = self.rfile.read(int(self.headers["Content-Length"])).decode()
         SEEN.append((self.path, self.headers["User-Agent"], body))
@@ -51,3 +57,14 @@ def test_error_status_is_a_fetch_error_after_retries(server: str) -> None:
             FetchRequest("osm", server + "/busy", "POST", form=(("data", "q"),))
         )
     assert len(SEEN) == 2
+
+
+def test_urls_with_umlauts_are_percent_encoded_not_a_crash(server: str) -> None:
+    document = HttpFetcher(min_interval_s=0).fetch(FetchRequest("site", server + "/räume?saal=groß"))
+    assert document.content == "<p>ok</p>"
+    assert SEEN[-1][0] == "/r%C3%A4ume?saal=gro%C3%9F"
+
+
+def test_a_malformed_url_is_a_fetch_error_not_a_crash() -> None:
+    with pytest.raises(FetchError):
+        HttpFetcher(min_interval_s=0, retries=0).fetch(FetchRequest("site", "https://exa mple.org:99999/"))

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import threading
 import time
@@ -56,12 +57,18 @@ class HttpFetcher:
                     break
             except (urllib.error.URLError, TimeoutError, ConnectionError, LookupError) as error:
                 last_error = f"{error} for {request.url}"
+            except (http.client.HTTPException, ValueError, OSError) as error:
+                # Malformed URLs, broken servers, TLS oddities: this source is unreachable, not a bug in us.
+                last_error = f"{type(error).__name__}: {error} for {request.url}"
+                break
         raise FetchError(last_error)
 
     def _prepare(self, request: FetchRequest) -> urllib.request.Request:
         data = urllib.parse.urlencode(request.form).encode() if request.form else None
         headers = {"User-Agent": USER_AGENT, "Accept": "*/*", **dict(request.headers)}
-        return urllib.request.Request(request.url, data=data, headers=headers, method=request.method)
+        return urllib.request.Request(
+            _ascii_url(request.url), data=data, headers=headers, method=request.method
+        )
 
     def _wait_for_turn(self, url: str) -> None:
         """Reserves this host's next slot under a lock, then sleeps outside it (other hosts go on)."""
@@ -72,6 +79,11 @@ class HttpFetcher:
             self._last_request_at[host] = slot
         if slot > now:
             time.sleep(slot - now)
+
+
+def _ascii_url(url: str) -> str:
+    """Percent-encodes non-ASCII characters (IRI -> URI); existing escapes and URL syntax stay."""
+    return urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=%~")
 
 
 class CachingFetcher:
