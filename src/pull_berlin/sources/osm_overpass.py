@@ -61,6 +61,9 @@ _AMENITY_STATEMENTS: Mapping[str, tuple[tuple[Proposition, float], ...]] = {
     ),
 }
 
+# Tags on any amenity that say live events happen there. Values other than "no" count (music_genre=jazz).
+_EVENT_TAGS: Mapping[str, float] = {"live_music": 0.9, "nightclub": 0.8, "karaoke": 0.7, "music_genre": 0.6}
+
 # Known hours that do not reach a window are evidence against it, a bit weaker than for it.
 _HOURS_OPPOSITION_STRENGTH = 0.8
 _WINDOW_CLAIMS = {TimeWindow.EVENING: _YES.OPERATES_IN_EVENING, TimeWindow.NIGHT: _YES.OPERATES_PAST_MIDNIGHT}
@@ -120,6 +123,12 @@ class OsmOverpassSource:
         amenity = tags.get("amenity", "")
         for proposition, strength in _AMENITY_STATEMENTS.get(amenity, ()):
             statements.append(Statement(proposition, self._evidence(url, f"amenity={amenity}", strength)))
+
+        for key, strength in _EVENT_TAGS.items():
+            value = tags.get(key, "")
+            if value and value != "no":
+                evidence = self._evidence(url, f"{key}={value}", strength)
+                statements.append(Statement(Proposition(_YES.HOSTS_EVENING_EVENTS), evidence))
 
         hours = tags.get("opening_hours", "")
         windows = windows_from_opening_hours(hours) if hours else None

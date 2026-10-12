@@ -83,6 +83,52 @@ class TestKeywordClassifier:
         (judgement,) = KeywordClassifier().classify([text])
         assert judgement[HIRE] > 0.5
 
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Für geschlossene Gesellschaften bis 40 Personen auf Anfrage.",
+            "Unser Separee eignet sich für Geburtstagsfeiern.",
+            "Das Hinterzimmer kann für Feiern reserviert werden.",
+            "Der Nebenraum steht für Gruppen bis 25 Personen zur Verfügung.",
+        ],
+    )
+    def test_bar_wording_for_private_events_signals_hireability(self, text: str) -> None:
+        (judgement,) = KeywordClassifier().classify([text])
+        assert judgement[HIRE] > 0.5
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Jeden Dienstag Pub Quiz ab 20 Uhr.",
+            "Karaoke-Abend am Freitag",
+            "Open Mic jeden ersten Sonntag im Monat",
+            "Jam Session mit der Hausband",
+            "Stand-up Comedy auf Englisch",
+            "Am Wochenende legt ein DJ auf.",
+            "Konzerte jeden Donnerstag ab 21 Uhr",
+            "Heute Konzert: The Groovy Cellar",
+        ],
+    )
+    def test_bar_event_formats_signal_hosting(self, text: str) -> None:
+        (judgement,) = KeywordClassifier().classify([text])
+        assert judgement[HOSTS] > 0.5
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Djembe-Kurs für Anfänger",
+            "Wir haben einen schönen Raum mit Blick auf den Garten.",
+            "Im Nebenraum können selbstständig Hausaufgaben erledigt werden.",
+            "Theater- und Konzertkasse im Karstadt, Müllerstraße 25",
+        ],
+    )
+    def test_near_misses_do_not_signal_hosting_or_hireability(self, text: str) -> None:
+        (judgement,) = KeywordClassifier().classify([text])
+        assert judgement[HOSTS] == 0.0 and judgement[HIRE] == 0.0
+
+    def test_model_id_changes_when_the_vocabulary_changes(self) -> None:
+        assert KeywordClassifier().model_id == "keywords-v2"
+
     def test_ordinary_text_signals_nothing(self) -> None:
         (judgement,) = KeywordClassifier().classify(["Wir haben Kaffee und Kuchen."])
         assert all(p == 0.0 for p in judgement.values())

@@ -15,7 +15,7 @@ from pull_berlin.catalog.domain.assessment import AssessmentPolicy
 from pull_berlin.catalog.domain.facility import Facility
 from pull_berlin.catalog.domain.observation import Observation
 from pull_berlin.catalog.domain.resolution import ResolutionPolicy
-from pull_berlin.catalog.domain.values import NotInBerlinError
+from pull_berlin.catalog.domain.values import NotInBerlinError, SpaceCategory
 from pull_berlin.extraction.policy import ExtractionPolicy
 from pull_berlin.extraction.ports import TextClassifier
 from pull_berlin.publishing.views import FacilityView
@@ -50,9 +50,11 @@ def pull(
     classifier: TextClassifier | None = None,
     extraction: ExtractionPolicy | None = None,
     enrich_limit: int | None = None,
+    enrich_categories: set[SpaceCategory] | None = None,
 ) -> PullResult:
     """`include_all=False` keeps only facilities with an evening/night offering (the catalog's scope).
-    `enrich_limit` caps how many facilities (with a website, by id) are enriched — for samples."""
+    `enrich_limit` caps how many facilities (with a website, by id) are enriched — for samples.
+    `enrich_categories` enriches only facilities whose primary category is one of these (e.g. bars)."""
     assessment = assessment or AssessmentPolicy()
     resolution = resolution or ResolutionPolicy()
     reader = _Reader(classifier, extraction or ExtractionPolicy())
@@ -72,7 +74,15 @@ def pull(
 
     attempted = observed = 0
     if enrichers:
-        with_site = [f for f in facilities if f.websites]
+        with_site = [
+            f
+            for f in facilities
+            if f.websites
+            and (
+                enrich_categories is None
+                or assessment.assess(f.statements).primary_category in enrich_categories
+            )
+        ]
         chosen = (
             {f.id for f in with_site[:enrich_limit]}
             if enrich_limit is not None

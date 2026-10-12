@@ -13,15 +13,21 @@ from pull_berlin.catalog.domain.claim import ClaimType, Proposition
 from pull_berlin.extraction.ports import Judgement
 
 _SIGNAL = 0.9
+# v2 (2026-10-12): bar vocabulary for private events and event formats; dropped "party", "programm",
+# "tickets" and "theater" from hosting because rental pages and children's theatre used them.
 _PATTERNS = {
     Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS): re.compile(
-        r"\w*miet\w*|vermiet|firmenfeier|weihnachtsfeier|hochzeit|private[nrs]? (feier|event|party)|"
-        r"private hire|for hire|venue hire|rent (our|the|a)|exklusiv buchen|location buchen|raum buchen",
+        r"\w*miet\w*|vermiet|firmenfeier|weihnachtsfeier|hochzeit|geburtstagsfeier|"
+        r"private[nrs]? (feier|event|party)|private hire|for hire|venue hire|rent (our|the|a)|"
+        r"exklusiv buchen|location buchen|raum buchen|geschlossene[nr]? gesellschaft|s[eé]par[eé]e|"
+        r"hinterzimmer|nebenraum (f[uü]r|zum) (feier|gruppe|veranstaltung)\w*|gesellschaftsraum|"
+        r"f[uü]r gruppen bis",
         re.IGNORECASE,
     ),
     Proposition(ClaimType.HOSTS_EVENING_EVENTS): re.compile(
-        r"konzert|club ?night|clubnacht|lesung|theater|live ?musik|programm|line ?up|tickets?\b|"
-        r"veranstaltungskalender|upcoming events|party|parties",
+        r"\bkonzerte?\b|konzertabend|club ?night|clubnacht|lesung|live ?musik|live ?music|line ?up|"
+        r"veranstaltungskalender|upcoming events|\bquiz|karaoke|open ?mic|jam ?session|comedy|"
+        r"stand-? ?up|\bdjs?\b|tanzabend",
         re.IGNORECASE,
     ),
     Proposition(ClaimType.OPERATES_PAST_MIDNIGHT): re.compile(
@@ -33,7 +39,7 @@ _PATTERNS = {
 
 
 class KeywordClassifier:
-    model_id = "keywords-v1"
+    model_id = "keywords-v2"
 
     def classify(self, texts: Sequence[str]) -> list[Judgement]:
         return [

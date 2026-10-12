@@ -125,3 +125,36 @@ class TestParse:
         )
         with pytest.raises(ValueError, match="Overpass"):
             SOURCE.parse(bad)
+
+
+class TestBarEventTags:
+    HOSTS = Proposition(ClaimType.HOSTS_EVENING_EVENTS)
+
+    @pytest.mark.parametrize(
+        "tags",
+        [{"live_music": "yes"}, {"karaoke": "yes"}, {"nightclub": "yes"}, {"music_genre": "jazz"}],
+    )
+    def test_event_tags_on_a_bar_say_it_hosts_evening_events(self, tags: dict[str, str]) -> None:
+        (obs,) = SOURCE.parse(document(node(amenity="bar", **tags)))
+        assert self.HOSTS in propositions(obs.statements)
+
+    def test_live_music_no_says_nothing_about_hosting(self) -> None:
+        (obs,) = SOURCE.parse(document(node(amenity="bar", live_music="no")))
+        assert self.HOSTS not in propositions(obs.statements)
+
+    def test_event_tag_evidence_quotes_the_tag(self) -> None:
+        (obs,) = SOURCE.parse(document(node(amenity="pub", live_music="yes")))
+        hosting = [s for s in obs.statements if s.proposition == self.HOSTS]
+        assert [s.evidence.excerpt for s in hosting] == ["live_music=yes"]
+
+    def test_a_bar_with_live_music_and_late_hours_is_hosting_at_night(self) -> None:
+        from pull_berlin.catalog.domain.assessment import AssessmentPolicy
+        from pull_berlin.catalog.domain.offering import OfferingKind
+        from pull_berlin.catalog.domain.values import TimeWindow
+
+        (obs,) = SOURCE.parse(
+            document(node(amenity="bar", live_music="yes", opening_hours="Fr,Sa 20:00-04:00"))
+        )
+        (offering,) = AssessmentPolicy().assess(obs.statements).offerings
+        assert offering.kind is OfferingKind.EVENT_HOSTING
+        assert offering.windows == frozenset({TimeWindow.EVENING, TimeWindow.NIGHT})

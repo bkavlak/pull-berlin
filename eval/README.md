@@ -4,9 +4,9 @@
 `{"url", "text", "labels": {"is_hireable_for_private_events": true|false|null, ...}, "labelled_by"}`.
 A label says whether **the text itself states** the proposition; `null` means not judged.
 
-- `gold/silver-2026-10-12.jsonl`: 50 passages from 10 Berlin venue/community sites, labelled by Claude
-  from the first ~700 characters of each passage. **Silver, not gold: needs human review** before
-  numbers from it are trusted or used for fine-tuning. Few positives for `operates_past_midnight`.
+- `gold/human-2026-10-12.jsonl`: 51 passages labelled by the project owner on the labelling page
+  (replaces the earlier Claude-labelled silver set, which covered the same passages). Few positives for
+  `hosts_evening_events` (2) and `operates_past_midnight` (3): only hireability is measurable yet.
 
 Labelling page: the **Venue Passage Labels** artifact on claude.ai holds the 141 exported passages
 (Claude's silver labels shown as drafts on the first 50). Label there with Y / N / U, then ask Claude to
@@ -34,3 +34,15 @@ Findings:
 - Keywords are the default classifier until a fine-tuned Laya beats them on a human-reviewed set.
 - Next: review/extend the labels to a few hundred passages, fine-tune Laya (its Apple Silicon script),
   re-run this table. Other propositions need more positives before their numbers mean anything.
+
+## Results — 2026-10-12, human labels (51), keyword classifier v1 → v2
+
+| | precision | recall | F1 | Brier |
+|---|---|---|---|---|
+| hireable, `keywords-v1` | 1.00 | 0.65 | 0.79 | 0.127 |
+| hireable, `keywords-v2` | 1.00 | 0.71 | **0.83** | **0.107** |
+| hosting false positives (2 true in set) | v1: 11 | v2: 3 | | Brier 0.248 → 0.101 |
+
+v2 adds bar vocabulary (geschlossene Gesellschaft, Separee, Hinterzimmer, Nebenraum für Feiern, quiz,
+karaoke, open mic, jam session, comedy, DJ) and drops "party", "programm", "tickets", "theater" from hosting.
+Known ambiguity left in: "DJ" on rental pages ("DJ included in the package").

@@ -109,3 +109,23 @@ class TestEnrichmentFromVenueSites:
     def test_unreachable_site_is_counted_not_fatal(self) -> None:
         report = self.run({}).report
         assert (report.sites_attempted, report.sites_observed) == (1, 0)
+
+
+class TestEnrichingOnlySomeCategories:
+    def test_site_categories_limit_website_visits_to_those_kinds_of_place(self) -> None:
+        from pull_berlin.catalog.domain.values import SpaceCategory
+        from pull_berlin.extraction.keyword_classifier import KeywordClassifier
+        from pull_berlin.sources.venue_site import VenueSiteSource
+
+        bar = osm_node(20, "Bar Eins", 52.52, 13.41, amenity="bar", website="https://bar.example/")
+        club = osm_node(21, "Club Zwei", 52.50, 13.45, amenity="nightclub", website="https://club.example/")
+        fetcher = FakeFetcher({ENDPOINT: overpass_json(bar, club)})
+        pull(
+            [OsmOverpassSource()],
+            fetcher,
+            enrichers=[VenueSiteSource()],
+            classifier=KeywordClassifier(),
+            enrich_categories={SpaceCategory.BAR},
+        )
+        visited = {r.url.split("/")[2] for r in fetcher.requests if r.source_id == "site"}
+        assert visited == {"bar.example"}

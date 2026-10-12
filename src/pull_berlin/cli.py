@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from pull_berlin.application.pull import pull
+from pull_berlin.catalog.domain.values import SpaceCategory
 from pull_berlin.extraction.caching_classifier import CachingClassifier
 from pull_berlin.extraction.gate import LexicalGate
 from pull_berlin.extraction.keyword_classifier import KeywordClassifier
@@ -49,6 +50,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="how website text is read: keyword baseline (default; best measured precision), Laya behind a "
         "lexical gate, or Laya on every passage (Laya needs `uv sync --extra laya`); see eval/README.md",
     )
+    pull_cmd.add_argument(
+        "--site-categories",
+        default=None,
+        help="read websites only of these kinds of place, comma-separated (e.g. bar or bar,club)",
+    )
     pull_cmd.add_argument("--laya-batch-size", type=int, default=4, help="texts per Laya forward pass")
     serve_cmd = commands.add_parser("serve", help="open the map: serve web/ and data/out/ on localhost")
     serve_cmd.add_argument("--port", type=int, default=8000)
@@ -65,6 +71,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             enrichers=[VenueSiteSource()] if args.sites else [],
             classifier=_classifier(args.classifier, args.cache, args.laya_batch_size) if args.sites else None,
             enrich_limit=args.site_limit,
+            enrich_categories=_categories(args.site_categories),
         )
     except FetchError as error:
         print(f"fetch failed: {error}", file=sys.stderr)
@@ -84,6 +91,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     for path in written:
         print(f"wrote {path}")
     return 0
+
+
+def _categories(value: str | None) -> set[SpaceCategory] | None:
+    if not value:
+        return None
+    return {SpaceCategory(name.strip()) for name in value.split(",") if name.strip()}
 
 
 def _serve(port: int) -> int:
