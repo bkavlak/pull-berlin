@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Map front end for pull-berlin. No build step; tests run with node --test."
+}

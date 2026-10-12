@@ -50,7 +50,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         "lexical gate, or Laya on every passage (Laya needs `uv sync --extra laya`); see eval/README.md",
     )
     pull_cmd.add_argument("--laya-batch-size", type=int, default=4, help="texts per Laya forward pass")
+    serve_cmd = commands.add_parser("serve", help="open the map: serve web/ and data/out/ on localhost")
+    serve_cmd.add_argument("--port", type=int, default=8000)
     args = parser.parse_args(argv)
+    if args.command == "serve":
+        return _serve(args.port)
 
     fetcher = CachingFetcher(args.cache, None if args.offline else HttpFetcher())
     try:
@@ -79,6 +83,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     for path in written:
         print(f"wrote {path}")
+    return 0
+
+
+def _serve(port: int) -> int:
+    from pull_berlin.serve import make_server
+
+    if not Path("web/index.html").exists():
+        print("run this from the project root (web/index.html not found)", file=sys.stderr)
+        return 2
+    server = make_server(Path.cwd(), port)
+    print(f"map: http://127.0.0.1:{server.server_address[1]}/web/  (Ctrl+C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
     return 0
 
 
