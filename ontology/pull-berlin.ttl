@@ -55,8 +55,7 @@ pb:EventSpace a owl:Class ;
     rdfs:subClassOf obo:BFO_0000029 ;               # bfo:site
     rdfs:label "Event Space"@en , "Veranstaltungsraum"@de ;
     skos:definition "A Site that is provided by some Material Artifact and that can accommodate a gathering of Persons participating in some Planned Act."@en ;
-    skos:scopeNote "The space is the immaterial site (the hall, the dance floor, the courtyard), not the building. Granularity matters (Smith & Mark: categorization is boundary-sensitive): a building may provide several Event Spaces."@en ;
-    pb:domainModelType "pull_berlin.catalog.domain.space.Space" .
+    skos:scopeNote "The space is the immaterial site (the hall, the dance floor, the courtyard), not the building. Granularity matters (Smith & Mark: categorization is boundary-sensitive): a building may provide several Event Spaces. Domain type pending: spaces will be entities inside the Facility aggregate once a source distinguishes them."@en .
 
 pb:EnclosedEventSpace a owl:Class ;
     rdfs:subClassOf pb:EventSpace ;
@@ -79,6 +78,8 @@ pb:providesSite a owl:ObjectProperty ;
     rdfs:range  obo:BFO_0000029 ;                   # bfo:site
     owl:inverseOf pb:siteProvidedBy ;
     skos:definition "x provides site y iff y is a Site whose boundaries coincide wholly or partly with boundaries of x, or whose location is determined in relation to x."@en .
+
+cco:ont00000995 pb:domainModelType "pull_berlin.catalog.domain.facility.Facility" .   # Facility aggregate = cco:Material Artifact
 
 pb:siteProvidedBy a owl:ObjectProperty ;
     rdfs:label "site provided by"@en .
@@ -126,20 +127,21 @@ pb:TimeWindow a owl:Class ;
     rdfs:subClassOf skos:Concept ;
     rdfs:label "Time Window"@en ;
     skos:definition "A daily recurring band of local clock time (Europe/Berlin) used to classify the temporal regions in which Space Use Roles are realized."@en ;
-    skos:scopeNote "Not a bfo:temporal region: a recurring window is a classification of many temporal regions."@en ;
-    pb:domainModelType "pull_berlin.catalog.domain.values.TimeWindow" .
+    skos:scopeNote "Not a bfo:temporal region: a recurring window is a classification of many temporal regions."@en .
 
 pb:TimeWindowScheme a skos:ConceptScheme ; rdfs:label "Time windows"@en .
 
 pb:Evening a pb:TimeWindow , skos:Concept ;
     skos:inScheme pb:TimeWindowScheme ;
     skos:prefLabel "Evening"@en , "Abend"@de ;
-    skos:definition "The time window from 18:00 local time until 00:00."@en .
+    skos:definition "The time window from 18:00 local time until 00:00."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.values.TimeWindow.EVENING" .
 
 pb:Night a pb:TimeWindow , skos:Concept ;
     skos:inScheme pb:TimeWindowScheme ;
     skos:prefLabel "Night"@en , "Nacht"@de ;
-    skos:definition "The time window from 00:00 local time until 06:00."@en .
+    skos:definition "The time window from 00:00 local time until 06:00."@en ;
+    pb:domainModelType "pull_berlin.catalog.domain.values.TimeWindow.NIGHT" .
 
 #################################################################
 #  Radial space categories  (Smith & Mark: prototype-based, graded)
@@ -193,7 +195,7 @@ pb:InformationSource a owl:Class ;
     rdfs:subClassOf cco:ont00000958 ;               # cco:Information Content Entity
     rdfs:label "Information Source"@en ;
     skos:definition "An Information Content Entity that is a body of published content maintained by some Agent and consulted as one unit, such as a map service, a listing site or a venue's website."@en ;
-    pb:domainModelType "pull_berlin.sourcing.domain.source.Source" .
+    pb:domainModelType "pull_berlin.sourcing.domain.Source" .
 
 pb:hasSourceKind a owl:ObjectProperty , owl:FunctionalProperty ;
     rdfs:label "has source kind"@en ;
@@ -204,7 +206,7 @@ pb:SourceKind a owl:Class ;
     rdfs:subClassOf skos:Concept ;
     rdfs:label "Source Kind"@en ;
     skos:definition "A characteristic category of Information Source, determining which kinds of Claims it supports well."@en ;
-    pb:domainModelType "pull_berlin.sourcing.domain.source_kind.SourceKind" .
+    skos:scopeNote "Domain: pull_berlin.shared_kernel.SourceKind (members map to the concepts below)."@en .
 
 pb:SourceKindScheme a skos:ConceptScheme ; rdfs:label "Source kinds"@en .
 pb:OpenGeodata        a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "open geodata"@en ; skos:example "OpenStreetMap"@en .
@@ -219,7 +221,7 @@ pb:Observation a owl:Class ;
     rdfs:subClassOf cco:ont00000853 ;               # cco:Descriptive ICE
     rdfs:label "Observation"@en ;
     skos:definition "A Descriptive Information Content Entity that is derived from one document of one Information Source and that describes a single candidate Material Artifact or Event Space."@en ;
-    pb:domainModelType "pull_berlin.sourcing.domain.observation.Observation" .
+    pb:domainModelType "pull_berlin.catalog.domain.observation.Observation" .
 
 pb:Evidence a owl:Class ;
     rdfs:subClassOf cco:ont00000853 ;

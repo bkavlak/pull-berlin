@@ -40,16 +40,17 @@ They are kept parallel and in sync by contract tests (see §6).
 
 | pb term | BFO/CCO parent | Meaning (short) | Domain model type |
 |---|---|---|---|
-| `EventSpace` | `bfo:site` | site provided by a material artifact that can hold a gathering | `catalog.domain.space.Space` |
-| `EnclosedEventSpace` / `OpenAirEventSpace` | `EventSpace` | bona fide / partly fiat boundaries | `Space.enclosure` |
+| — | `cco:Material Artifact` | the building/premises; **aggregate root** | `catalog.domain.facility.Facility` |
+| `EventSpace` | `bfo:site` | site provided by a material artifact that can hold a gathering | *(pending: entity inside Facility)* |
+| `EnclosedEventSpace` / `OpenAirEventSpace` | `EventSpace` | bona fide / partly fiat boundaries | *(pending)* |
 | `SpaceUseRole` | `bfo:role` | the artifact is made available for some kind of planned act — **extension point** | `catalog.domain.offering.Offering` |
 | `EventHireRole` | `SpaceUseRole` | realized in `cco:Act of Renting` / `Act of Facility Use` by another agent | `OfferingKind.EVENT_HIRE` |
 | `EventHostingRole` | `SpaceUseRole` | realized in `cco:Act of Entertainment` organized by the operator | `OfferingKind.EVENT_HOSTING` |
 | `TimeWindow` (`Evening`, `Night`) | `skos:Concept` | recurring daily band, classifies temporal regions | `catalog.domain.values.TimeWindow` |
 | `SpaceCategory` | `skos:Concept` | radial category with prototype | `catalog.domain.values.SpaceCategory` |
-| `Bezirk`, `Berlin` | `cco:Local Administrative Region`, `cco:City` | fiat administrative regions | `catalog.domain.values.Bezirk` |
-| `InformationSource` + `SourceKind` | `cco:ICE`, `skos:Concept` | body of published content and its category | `sourcing.domain.source.Source` |
-| `Observation` | `cco:Descriptive ICE` | what one document says about one candidate | `sourcing.domain.observation.Observation` |
+| `Bezirk`, `Berlin` | `cco:Local Administrative Region`, `cco:City` | fiat administrative regions | *(pending: PostGIS assignment)* |
+| `InformationSource` + `SourceKind` | `cco:ICE`, `skos:Concept` | body of published content and its category | `sourcing.domain.Source`, `shared_kernel.SourceKind` |
+| `Observation` | `cco:Descriptive ICE` | what one document says about one candidate | `catalog.domain.observation.Observation` |
 | `Evidence`, `UserReview` | `cco:Descriptive ICE` | excerpt supporting/opposing a claim | `catalog.domain.claim.Evidence` |
 | `Claim`, `SpaceCategoryAssignment` | `cco:Descriptive ICE` | assertion with confidence, ≥1 evidence | `catalog.domain.claim.Claim` |
 

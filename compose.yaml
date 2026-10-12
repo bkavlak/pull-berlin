@@ -1,0 +1,17 @@
+# Local services (rules/tooling.md). Runtimes come from asdf, Python packages from uv.
+# PostGIS backs the catalog read model and GeoSQL. Dekart is added when the PostGIS
+# repository lands (milestone 4), wired to this database.
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: pull_berlin
+      POSTGRES_USER: pull_berlin
+      POSTGRES_PASSWORD: pull_berlin
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgis-data:/var/lib/postgresql/data
+
+volumes:
+  postgis-data:

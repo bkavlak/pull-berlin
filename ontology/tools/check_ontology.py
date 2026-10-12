@@ -7,6 +7,7 @@
 3. SHACL: every example must conform to the shapes.
 4. Every class in the pb namespace must have rdfs:label and skos:definition.
 """
+
 from __future__ import annotations
 
 import os
@@ -42,23 +43,35 @@ def is_consistent(graph: rdflib.Graph) -> bool:
     with tempfile.NamedTemporaryFile(suffix=".owl", delete=False) as handle:
         reasoned.serialize(handle.name, format="xml")
     result = subprocess.run(
-        ["java", "-Xmx2000M", "-cp", f"{HERMIT}{os.pathsep}{HERMIT / 'HermiT.jar'}",
-         "org.semanticweb.HermiT.cli.CommandLine", "-c", "-I", f"file://{handle.name}"],
-        capture_output=True, text=True,
+        [
+            "java",
+            "-Xmx2000M",
+            "-cp",
+            f"{HERMIT}{os.pathsep}{HERMIT / 'HermiT.jar'}",
+            "org.semanticweb.HermiT.cli.CommandLine",
+            "-c",
+            "-I",
+            f"file://{handle.name}",
+        ],
+        capture_output=True,
+        text=True,
     )
     return result.returncode == 0
 
 
 def undocumented_classes(graph: rdflib.Graph) -> list[str]:
     return [
-        str(cls) for cls in graph.subjects(RDF.type, OWL.Class)
+        str(cls)
+        for cls in graph.subjects(RDF.type, OWL.Class)
         if str(cls).startswith(PB)
         and (graph.value(cls, RDFS.label) is None or graph.value(cls, SKOS.definition) is None)
     ]
 
 
 def main() -> int:
-    ontology = load(sorted((ROOT / "imports").glob("*.ttl")) + [ROOT / "pull-berlin.ttl", ROOT / "berlin-regions.ttl"])
+    ontology = load(
+        [*sorted((ROOT / "imports").glob("*.ttl")), ROOT / "pull-berlin.ttl", ROOT / "berlin-regions.ttl"]
+    )
     shapes = load([ROOT / "shapes" / "pull-berlin-shapes.ttl"])
     failures: list[str] = []
 
@@ -70,7 +83,9 @@ def main() -> int:
         data = load([example])
         if not is_consistent(ontology + data):
             failures.append(f"{example.name}: inconsistent with ontology")
-        conforms, _, report = pyshacl.validate(data, shacl_graph=shapes, ont_graph=ontology, inference="rdfs", advanced=True)
+        conforms, _, report = pyshacl.validate(
+            data, shacl_graph=shapes, ont_graph=ontology, inference="rdfs", advanced=True
+        )
         if not conforms:
             failures.append(f"{example.name}: SHACL violations\n{report}")
 
