@@ -90,6 +90,9 @@ class TestKeywordClassifier:
             "Unser Separee eignet sich für Geburtstagsfeiern.",
             "Das Hinterzimmer kann für Feiern reserviert werden.",
             "Der Nebenraum steht für Gruppen bis 25 Personen zur Verfügung.",
+            "Manchmal mietet ihr euch einfach bei uns ein.",
+            "Raummiete auf Anfrage",
+            "Die Location ist mietbar ab 50 Personen.",
         ],
     )
     def test_bar_wording_for_private_events_signals_hireability(self, text: str) -> None:
@@ -120,6 +123,7 @@ class TestKeywordClassifier:
             "Wir haben einen schönen Raum mit Blick auf den Garten.",
             "Im Nebenraum können selbstständig Hausaufgaben erledigt werden.",
             "Theater- und Konzertkasse im Karstadt, Müllerstraße 25",
+            "Responsible gaming: limieten, time-out, zelfuitsluiting",
         ],
     )
     def test_near_misses_do_not_signal_hosting_or_hireability(self, text: str) -> None:
@@ -127,7 +131,7 @@ class TestKeywordClassifier:
         assert judgement[HOSTS] == 0.0 and judgement[HIRE] == 0.0
 
     def test_model_id_changes_when_the_vocabulary_changes(self) -> None:
-        assert KeywordClassifier().model_id == "keywords-v2"
+        assert KeywordClassifier().model_id == "keywords-v3"
 
     def test_ordinary_text_signals_nothing(self) -> None:
         (judgement,) = KeywordClassifier().classify(["Wir haben Kaffee und Kuchen."])

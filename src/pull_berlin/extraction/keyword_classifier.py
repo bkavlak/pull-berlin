@@ -13,11 +13,12 @@ from pull_berlin.catalog.domain.claim import ClaimType, Proposition
 from pull_berlin.extraction.ports import Judgement
 
 _SIGNAL = 0.9
+# v3: renting words need word boundaries ("limieten" matched before).
 # v2 (2026-10-12): bar vocabulary for private events and event formats; dropped "party", "programm",
 # "tickets" and "theater" from hosting because rental pages and children's theatre used them.
 _PATTERNS = {
     Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS): re.compile(
-        r"\w*miet\w*|vermiet|firmenfeier|weihnachtsfeier|hochzeit|geburtstagsfeier|"
+        r"\b(?:an|ver)?miet(?:e|en|et|est|bar|ung|preis|anfrage)?\b|gemietet|vermiet\w*|\w+miete\b|firmenfeier|weihnachtsfeier|hochzeit|geburtstagsfeier|"
         r"private[nrs]? (feier|event|party)|private hire|for hire|venue hire|rent (our|the|a)|"
         r"exklusiv buchen|location buchen|raum buchen|geschlossene[nr]? gesellschaft|s[eé]par[eé]e|"
         r"hinterzimmer|nebenraum (f[uü]r|zum) (feier|gruppe|veranstaltung)\w*|gesellschaftsraum|"
@@ -39,7 +40,7 @@ _PATTERNS = {
 
 
 class KeywordClassifier:
-    model_id = "keywords-v2"
+    model_id = "keywords-v3"
 
     def classify(self, texts: Sequence[str]) -> list[Judgement]:
         return [
