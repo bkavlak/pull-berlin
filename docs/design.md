@@ -226,6 +226,7 @@ Adding a source = new package under `sources/` + registry entry + fixtures. Addi
 3. ✅ **OSM slice** — Overpass adapter, opening-hours → TimeWindow, export CSV/JSON/GeoJSON. First run (2026-10-12): 3,339 OSM objects → 3,309 facilities → 530 with an evening/night offering.
 4. ✅ **Map** — `web/index.html` (MapLibre + OpenFreeMap): filters for offering, time window, category, confidence and name; `pull-berlin serve`. Still open: GeoSQL + Dekart QA views once PostGIS lands.
 5. ✅ **Venue websites + extraction** — VenueSiteSource, QuestionSet v1, keyword baseline, Laya adapter with lexical gate, classification cache, eval tooling, silver set (50 passages).
+5b. ✅ **Bars that host events** — OSM event tags (live_music, karaoke, nightclub, music_genre), keyword classifier v3 with bar vocabulary, `--site-categories bar`, parallel resumable crawl. Run 2026-10-12: 594 bar sites, 452 read; catalog 539 → 718 spaces, 187 of them bars (99 hireable, 139 hosting, 90 past midnight).
 6. **Laya fine-tuning** — human-reviewed labels (a few hundred passages), fine-tune on Apple Silicon, adopt if it beats keywords.
 7. **Google Maps reviews** — only with one of the D7 options.
 8. Next sources: Resident Advisor (hosting evidence), Spacebase (hire evidence).
