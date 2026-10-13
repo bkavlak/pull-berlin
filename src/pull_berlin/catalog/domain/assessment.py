@@ -23,6 +23,7 @@ DEFAULT_PRIORS: Mapping[SourceKind, float] = {
     SourceKind.VENUE_OWN_SITE: 0.95,
     SourceKind.OFFICIAL_COMMUNITY: 0.9,
     SourceKind.SOCIAL: 0.5,
+    SourceKind.HUMAN_REVIEW: 0.98,
 }
 
 _OFFERING_CLAIMS = {

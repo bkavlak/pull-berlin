@@ -73,5 +73,9 @@ class Facility:
             statements=tuple(dict.fromkeys(self.statements + observation.statements)),
         )
 
+    def with_statements(self, statements: tuple[Statement, ...]) -> Facility:
+        """Adds statements made about this facility from outside a source document (human reviews)."""
+        return replace(self, statements=tuple(dict.fromkeys(self.statements + statements)))
+
     def assess(self, policy: AssessmentPolicy) -> Assessment:
         return policy.assess(self.statements)

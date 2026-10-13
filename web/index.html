@@ -77,6 +77,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .pop .meta { color: var(--muted); font: 12px var(--font-mono); margin-bottom: 6px; }
 .pop ul { margin: 0 0 6px; padding-left: 16px; }
 .pop a { color: var(--accent); word-break: break-all; }
+.note a { color: var(--accent); }
+.pop .checked { color: var(--muted); font-size: 12px; margin: 0; }
 </style>
 </head>
 <body>
@@ -103,7 +105,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       <span class="note">Larger markers = higher confidence</span>
     </div>
     <section aria-label="Results"><ul class="results" id="results"></ul><p class="more" id="more"></p></section>
-    <p class="note">Data: OpenStreetMap contributors (ODbL) and the venues' own websites, read by pull-berlin.</p>
+    <p class="note">Data: OpenStreetMap contributors (ODbL) and the venues' own websites, read by pull-berlin and checked by people.
+      Something wrong? <a href="https://github.com/bkavlak/pull-berlin/blob/main/CONTRIBUTING.md">Help check the data</a>.</p>
   </aside>
   <div id="map" role="region" aria-label="Map of Berlin evening spaces"></div>
 </div>
@@ -112,7 +115,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 <script type="module">
 import { OFFERING_LABELS, WINDOW_LABELS, toFacility, matches, markerKind, countBy, emptyFilter } from "./filters.js";
 
-const DATA_URL = new URLSearchParams(location.search).get("data") || "../data/out/facilities.geojson";
+const DATA_URL = new URLSearchParams(location.search).get("data") || "data/facilities.geojson";
+const REPO_URL = "https://github.com/bkavlak/pull-berlin";
 const BERLIN = { center: [13.405, 52.52], zoom: 10.2 };
 const RESULT_LIMIT = 150;
 const filter = emptyFilter();
@@ -186,7 +190,11 @@ function popupContent(f) {
   return el("div", { class: "pop" }, el("h2", {}, f.name),
     el("div", { class: "meta" }, `${f.category.replace("_", " ")} · confidence ${f.confidence.toFixed(2)}`),
     el("ul", {}, ...offers.map((o) => el("li", {}, o)), el("li", {}, when)),
-    links.length ? el("ul", {}, ...links) : "");
+    links.length ? el("ul", {}, ...links) : "",
+    f.reviewedBy.length
+      ? el("p", { class: "checked" }, "Checked by ", ...f.reviewedBy.flatMap((who, i) => [i ? ", " : "",
+          el("a", { href: `${REPO_URL}/blob/main/data/reviews/${who}.jsonl`, target: "_blank", rel: "noopener" }, `@${who}`)]))
+      : "");
 }
 
 let popup;
@@ -224,7 +232,7 @@ try {
   if (map.isStyleLoaded()) { if (!map.getSource("spaces")) addLayers(); } else map.once("load", () => { if (!map.getSource("spaces")) addLayers(); });
 } catch (error) {
   $("summary").replaceChildren(el("div", { class: "error" },
-    `Could not load ${DATA_URL} (${error.message}). Run `, el("code", {}, "uv run pull-berlin pull"),
+    `Could not load ${DATA_URL} (${error.message}). Run `, el("code", {}, "uv run pull-berlin publish"),
     " and open the map with ", el("code", {}, "uv run pull-berlin serve"), "."));
 }
 </script>

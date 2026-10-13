@@ -1,0 +1,46 @@
+# Checks pull requests that carry human reviews (made with skills/review-venues).
+# Such a PR may change exactly one file: data/reviews/<author's GitHub login>.jsonl.
+# Its job summary lists what the reviews change on the map.
+name: Data review
+
+on:
+  pull_request:
+    paths:
+      - "data/reviews/**"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Only data values, only your own file
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          changed="$(git diff --name-only "$BASE...$HEAD")"
+          echo "Changed files:"; echo "$changed"
+          expected="$(echo "data/reviews/$AUTHOR.jsonl" | tr '[:upper:]' '[:lower:]')"
+          bad="$(echo "$changed" | while read -r f; do
+            [ "$(echo "$f" | tr '[:upper:]' '[:lower:]')" = "$expected" ] || echo "$f"; done)"
+          if [ -n "$bad" ]; then
+            echo "::error::A data review PR may only change data/reviews/$AUTHOR.jsonl. Also changed: $bad"
+            exit 1
+          fi
+          echo "REVIEW_FILE=$changed" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: Validate reviews and summarise the change
+        run: |
+          uv sync --no-dev
+          uv run pull-berlin review check
+          reviewer="$(basename "$REVIEW_FILE" .jsonl)"
+          uv run pull-berlin review summary --reviewer "$reviewer" >> "$GITHUB_STEP_SUMMARY"

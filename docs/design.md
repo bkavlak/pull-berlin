@@ -29,6 +29,7 @@ The model is built around `Space` + `Offering` so that later use cases (coworkin
 | D10 | Foundation | Parallel formal ontology: BFO 2020 → CCO → `pb:` with GeoSPARQL/PROV/SKOS, applying Smith & Mark (1998). Domain model specializes it. See [`ontology.md`](ontology.md) |
 | D11 | Spatial store | Local **PostGIS** behind `SpaceRepository` (replaces SQLite). Enables containment, Bezirk assignment, proximity search, and GeoSQL |
 | D12 | Map in the loop | **GeoSQL** agent skill + self-hosted **Dekart** to render query results and catch geometry errors visually |
+| D14 | Human review | People check claims (hireable / hosts / past midnight) with Laya's best passage in front of them; answers are `pb:HumanReview` evidence (prior 0.98) in `data/reviews/<login>.jsonl`. Contributed by pull requests that change only that file, through the agent-agnostic skill `skills/review-venues/`. The public map (GitHub Pages) = committed snapshot `data/catalog/facilities.json` + all reviews, rebuilt by CI |
 | D13 | Aggregate root | **Facility** (cco:Material Artifact) is the aggregate root; sources describe facilities, offerings are its roles. Event Spaces become entities inside it when a source distinguishes them |
 
 ---
@@ -227,6 +228,7 @@ Adding a source = new package under `sources/` + registry entry + fixtures. Addi
 4. ✅ **Map** — `web/index.html` (MapLibre + OpenFreeMap): filters for offering, time window, category, confidence and name; `pull-berlin serve`. Still open: GeoSQL + Dekart QA views once PostGIS lands.
 5. ✅ **Venue websites + extraction** — VenueSiteSource, QuestionSet v1, keyword baseline, Laya adapter with lexical gate, classification cache, eval tooling, silver set (50 passages).
 5b. ✅ **Bars that host events** — OSM event tags (live_music, karaoke, nightclub, music_genre), keyword classifier v3 with bar vocabulary, `--site-categories bar`, parallel resumable crawl. Run 2026-10-12: 594 bar sites, 452 read; catalog 539 → 718 spaces, 187 of them bars (99 hireable, 139 hosting, 90 past midnight).
+5c. ✅ **Public map + human review** — GitHub Pages from snapshot + reviews; `pull-berlin review` loop and skill; data-only PR check in CI.
 6. **Laya fine-tuning** — human-reviewed labels (a few hundred passages), fine-tune on Apple Silicon, adopt if it beats keywords.
 7. **Google Maps reviews** — only with one of the D7 options.
 8. Next sources: Resident Advisor (hosting evidence), Spacebase (hire evidence).

@@ -18,6 +18,7 @@ class SourceKind(Enum):
     VENUE_OWN_SITE = "venue_own_site"
     OFFICIAL_COMMUNITY = "official_community"
     SOCIAL = "social"
+    HUMAN_REVIEW = "human_review"  # a person checked the claim and said yes or no (data/reviews/)
 
     @property
     def ontology_term(self) -> str:

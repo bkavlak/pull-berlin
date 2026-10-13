@@ -28,6 +28,7 @@ _CSV_COLUMNS = (
     "max_confidence",
     "websites",
     "refs",
+    "reviewed_by",
 )
 
 
@@ -90,6 +91,7 @@ def _flat(view: FacilityView) -> dict[str, object]:
         "max_confidence": view.max_confidence,
         "websites": ";".join(view.websites),
         "refs": ";".join(view.refs),
+        "reviewed_by": ";".join(view.reviewers),
     }
 
 

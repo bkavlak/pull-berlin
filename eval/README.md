@@ -12,6 +12,10 @@ Labelling page: the **Venue Passage Labels** artifact on claude.ai holds the 141
 (Claude's silver labels shown as drafts on the first 50). Label there with Y / N / U, then ask Claude to
 read the labels back into `gold/human-<date>.jsonl` (or use the page's "Copy labels as JSONL").
 
+Human reviews (`data/reviews/*.jsonl`, see `skills/review-venues/`) keep the passage Laya rated highest
+and its probability next to the reviewer's yes/no, so they are a growing source of reviewed labels for
+fine-tuning. Note they judge the *facility*, not only the passage.
+
 Workflow: `uv run python tools/export_passages.py` writes unlabelled candidates to `eval/candidates.jsonl`
 (ignored by git); label them, move finished lines into `gold/`, then
 `uv run --extra laya python tools/eval_classifiers.py`.

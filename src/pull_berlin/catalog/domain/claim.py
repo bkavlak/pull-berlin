@@ -44,6 +44,14 @@ class Proposition:
     def label(self) -> str:
         return self.category.value if self.category else self.claim_type.value
 
+    @classmethod
+    def from_label(cls, label: str) -> Proposition:
+        """Inverse of `label`: a claim type's value, or a category's value for a category proposition."""
+        try:
+            return cls(ClaimType(label))
+        except ValueError:
+            return cls(ClaimType.FALLS_UNDER_CATEGORY, SpaceCategory(label))
+
 
 @dataclass(frozen=True)
 class Evidence:

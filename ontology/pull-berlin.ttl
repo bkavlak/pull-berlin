@@ -216,6 +216,7 @@ pb:EventListing       a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos
 pb:VenueOwnSite       a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "venue own site"@en .
 pb:OfficialCommunity  a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "official or community register"@en ; skos:example "Clubcommission Berlin"@en .
 pb:Social             a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "social media"@en .
+pb:HumanReview        a pb:SourceKind ; skos:inScheme pb:SourceKindScheme ; skos:prefLabel "human review"@en ; skos:definition "A person who checked a claim against the facility's own pages or their own knowledge and recorded yes or no."@en .
 
 pb:Observation a owl:Class ;
     rdfs:subClassOf cco:ont00000853 ;               # cco:Descriptive ICE

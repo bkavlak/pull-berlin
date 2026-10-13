@@ -15,6 +15,7 @@ class EvidenceView:
     excerpt: str
     stance: str
     strength: float
+    kind: str
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,20 @@ class FacilityView:
         return any("night" in o.windows for o in self.offerings)
 
     @property
+    def reviewers(self) -> tuple[str, ...]:
+        """Who checked a claim of this facility by hand (human review evidence), sorted."""
+        return tuple(
+            sorted(
+                {
+                    e.source.removeprefix("review:")
+                    for c in self.claims
+                    for e in c.evidence
+                    if e.kind == "human_review"
+                }
+            )
+        )
+
+    @property
     def max_confidence(self) -> float:
         return max((o.confidence for o in self.offerings), default=0.0)
 
@@ -77,7 +92,9 @@ class FacilityView:
                     proposition=claim.proposition.label,
                     confidence=_round(claim.confidence),
                     evidence=tuple(
-                        EvidenceView(e.source_id, e.url, e.excerpt, e.stance.value, e.strength)
+                        EvidenceView(
+                            e.source_id, e.url, e.excerpt, e.stance.value, e.strength, e.source_kind.value
+                        )
                         for e in claim.evidence
                     ),
                 )

@@ -25,3 +25,9 @@ data/out/
 .idea/
 .vscode/
 eval/candidates.jsonl
+
+# Map data: the committed snapshot is data/catalog/facilities.json; the rest is rebuilt
+data/catalog/*
+!data/catalog/facilities.json
+data/published/
+_site/

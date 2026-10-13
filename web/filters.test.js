@@ -26,6 +26,11 @@ test("empty offerings and websites parse to empty collections, not ['']", () => 
   assert.deepEqual(f.websites, []);
 });
 
+test("reviewers come from reviewed_by; data without the column means nobody checked it", () => {
+  assert.deepEqual(toFacility(feature({ reviewed_by: "ada;grace" })).reviewedBy, ["ada", "grace"]);
+  assert.deepEqual(toFacility(feature({})).reviewedBy, []);
+});
+
 test("a facility without known hours falls in the unknown time window", () => {
   const f = toFacility(feature({ evening: false, night: false }));
   assert.deepEqual([...f.windows], ["unknown"]);

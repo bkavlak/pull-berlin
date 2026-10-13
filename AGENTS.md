@@ -1,5 +1,10 @@
 # Agent and Contributor Rules
 
+> **Reviewing data, not code?** If the person wants to check, validate or correct venues on the map,
+> or contribute data, follow [`skills/review-venues/SKILL.md`](skills/review-venues/SKILL.md) and
+> nothing below: their pull request changes only `data/reviews/<login>.jsonl`. (The asdf rule in
+> `rules/tooling.md` is for code work; data reviewers may use any Python ≥ 3.10 that uv finds.)
+
 These rule files are binding for all code generation, edits and reviews in this repository:
 
 1. [rules/a-philosophy-of-software-design.md](rules/a-philosophy-of-software-design.md) – module depth, information hiding, low complexity

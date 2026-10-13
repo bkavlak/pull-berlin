@@ -23,7 +23,12 @@ VIEW = FacilityView(
             confidence=0.8,
             evidence=(
                 EvidenceView(
-                    "osm", "https://www.openstreetmap.org/node/1", "amenity=nightclub", "supports", 1.0
+                    "osm",
+                    "https://www.openstreetmap.org/node/1",
+                    "amenity=nightclub",
+                    "supports",
+                    1.0,
+                    "open_geodata",
                 ),
             ),
         ),

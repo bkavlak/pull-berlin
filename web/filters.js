@@ -25,6 +25,7 @@ export function toFacility(feature) {
     confidence: Number(p.max_confidence) || 0,
     websites: split(p.websites),
     refs: split(p.refs),
+    reviewedBy: split(p.reviewed_by),
     lon,
     lat,
   };
