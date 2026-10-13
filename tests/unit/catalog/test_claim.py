@@ -29,7 +29,7 @@ class TestProposition:
 
     def test_yes_no_proposition_must_not_carry_a_category(self) -> None:
         with pytest.raises(ValueError):
-            Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS, SpaceCategory.CLUB)
+            Proposition(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS, SpaceCategory.CLUB)
 
     def test_propositions_with_same_content_are_equal(self) -> None:
         a = Proposition(ClaimType.FALLS_UNDER_CATEGORY, SpaceCategory.BAR)

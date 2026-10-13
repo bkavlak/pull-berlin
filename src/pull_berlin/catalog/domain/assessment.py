@@ -27,7 +27,7 @@ DEFAULT_PRIORS: Mapping[SourceKind, float] = {
 }
 
 _OFFERING_CLAIMS = {
-    OfferingKind.EVENT_HIRE: ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS,
+    OfferingKind.EVENT_RENTAL: ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS,
     OfferingKind.EVENT_HOSTING: ClaimType.HOSTS_EVENING_EVENTS,
 }
 

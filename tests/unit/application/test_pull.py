@@ -91,10 +91,10 @@ class TestEnrichmentFromVenueSites:
             [OsmOverpassSource()], fetcher, enrichers=[VenueSiteSource()], classifier=KeywordClassifier()
         )
 
-    def test_rental_page_on_the_venue_site_brings_a_bar_into_scope_as_hireable(self) -> None:
+    def test_rental_page_on_the_venue_site_brings_a_bar_into_scope_as_rentable(self) -> None:
         home = "<html><body><p>Bar Zentral in Mitte. Unsere Bar kann für private Feiern gemietet werden.</p>"
         (bar,) = self.run({self.SITE: home}).facilities
-        assert [o.kind for o in bar.offerings] == ["event_hire"]
+        assert [o.kind for o in bar.offerings] == ["event_rental"]
         assert "site:bar.example" in bar.refs
 
     def test_site_without_signal_leaves_the_bar_out_of_scope(self) -> None:

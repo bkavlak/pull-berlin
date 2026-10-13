@@ -11,17 +11,17 @@ from pull_berlin.shared_kernel import SourceKind
 
 from ..catalog.builders import facility, statement
 
-HIRE = ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS
+RENT = ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS
 HALL = facility(
     local_id="node/1",
     name="Festsaal",
-    statements=(statement(HIRE, excerpt="amenity=events_venue"), statement(ClaimType.OPERATES_IN_EVENING)),
+    statements=(statement(RENT, excerpt="amenity=events_venue"), statement(ClaimType.OPERATES_IN_EVENING)),
 )
 BAR = facility(local_id="node/2", name="Eckkneipe", statements=(statement(ClaimType.OPERATES_IN_EVENING),))
 
 
 def said(facility_id: str, verdict: Verdict, reviewer: str = "ada") -> Review:
-    return Review(reviewer, facility_id, "", date(2026, 10, 13), {HIRE: verdict})
+    return Review(reviewer, facility_id, "", date(2026, 10, 13), {RENT: verdict})
 
 
 def test_without_reviews_publishing_shows_what_the_sources_say() -> None:
@@ -50,7 +50,7 @@ def test_reviews_of_facilities_missing_from_the_snapshot_are_reported() -> None:
 
 def test_snapshot_round_trip_reproduces_the_catalog() -> None:
     site = statement(
-        HIRE, source_id="site", kind=SourceKind.VENUE_OWN_SITE, strength=0.9, url="https://h.example/"
+        RENT, source_id="site", kind=SourceKind.VENUE_OWN_SITE, strength=0.9, url="https://h.example/"
     )
     views = publish([HALL.with_statements((site,))], [said("osm:node/1", Verdict.YES)]).facilities
     again = publish(read_snapshot(render_json(views)), []).facilities
@@ -80,4 +80,4 @@ def test_unchanged_facilities_are_not_listed_as_changes() -> None:
 
 def test_description_names_offering_confidence_and_time_windows() -> None:
     (view,) = publish([HALL], []).facilities
-    assert describe(view) == "event_hire 0.80 (evening)"
+    assert describe(view) == "event_rental 0.80 (evening)"

@@ -87,9 +87,9 @@ class TestParse:
             Proposition(ClaimType.FALLS_UNDER_CATEGORY, SpaceCategory.CLUB),
         } <= propositions(obs.statements)
 
-    def test_events_venue_is_hireable(self) -> None:
+    def test_events_venue_is_rentable(self) -> None:
         (obs,) = SOURCE.parse(document(node(amenity="events_venue")))
-        assert Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS) in propositions(obs.statements)
+        assert Proposition(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS) in propositions(obs.statements)
 
     def test_tag_evidence_quotes_the_tag(self) -> None:
         (obs,) = SOURCE.parse(document(node(amenity="events_venue")))

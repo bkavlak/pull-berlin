@@ -8,7 +8,7 @@ They are kept parallel and in sync by contract tests (see §6).
   ┌────────────────────────────────────────────────────────────┐
   │  Python domain model (DDD)  Space, Offering, Claim, …      │  behaviour, invariants, policies
   ├────────────────────────────────────────────────────────────┤
-  │  pull-berlin ontology (pb:)  EventSpace, EventHireRole, …  │  what our terms mean
+  │  pull-berlin ontology (pb:)  EventSpace, EventRentalRole, …  │  what our terms mean
   ├────────────────────────────────────────────────────────────┤
   │  Common Core Ontologies 2026-08-13 (cco:)                  │  Facility, Geospatial Location, City, Organization, ICE, Act of Renting …
   ├────────────────────────────────────────────────────────────┤
@@ -44,7 +44,7 @@ They are kept parallel and in sync by contract tests (see §6).
 | `EventSpace` | `bfo:site` | site provided by a material artifact that can hold a gathering | *(pending: entity inside Facility)* |
 | `EnclosedEventSpace` / `OpenAirEventSpace` | `EventSpace` | bona fide / partly fiat boundaries | *(pending)* |
 | `SpaceUseRole` | `bfo:role` | the artifact is made available for some kind of planned act — **extension point** | `catalog.domain.offering.Offering` |
-| `EventHireRole` | `SpaceUseRole` | realized in `cco:Act of Renting` / `Act of Facility Use` by another agent | `OfferingKind.EVENT_HIRE` |
+| `EventRentalRole` | `SpaceUseRole` | realized in `cco:Act of Renting` / `Act of Facility Use` by another agent | `OfferingKind.EVENT_RENTAL` |
 | `EventHostingRole` | `SpaceUseRole` | realized in `cco:Act of Entertainment` organized by the operator | `OfferingKind.EVENT_HOSTING` |
 | `TimeWindow` (`Evening`, `Night`) | `skos:Concept` | recurring daily band, classifies temporal regions | `catalog.domain.values.TimeWindow` |
 | `SpaceCategory` | `skos:Concept` | radial category with prototype | `catalog.domain.values.SpaceCategory` |
@@ -60,7 +60,7 @@ See `ontology/examples/example-space.ttl` for every pattern used once.
 
 ## 4. Modelling decisions worth knowing
 
-1. **Roles inhere in the material artifact, not in the site.** Hireability depends on the operator's control over the building; BFO practice puts realizables in material bearers. The role is *about* the sites the artifact provides.
+1. **Roles inhere in the material artifact, not in the site.** Rentability depends on the operator's control over the building; BFO practice puts realizables in material bearers. The role is *about* the sites the artifact provides.
 2. **Recurring windows are classifications, not BFO temporal regions.** "Every evening" is not one temporal region.
 3. **CCO information pattern:** literal text/URIs sit on an `Information Bearing Entity` that `is carrier of` the ICE. The reasoner rejected putting `has text value` directly on ICEs — this is enforced by the shapes.
 4. **`pb:excerptedFrom` instead of `bfo:continuant part of` between ICEs**: the latter is inconsistent with BFO 2020 + CCO axioms (HermiT).

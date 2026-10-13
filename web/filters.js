@@ -1,7 +1,7 @@
 // Pure logic of the map: turning exported features into facilities and deciding what is shown.
 // No DOM, no map library — unit tested with `node --test web/*.test.js`.
 
-export const OFFERING_LABELS = { event_hire: "Can be hired", event_hosting: "Hosts own events" };
+export const OFFERING_LABELS = { event_rental: "Can be rented", event_hosting: "Hosts own events" };
 export const WINDOW_LABELS = { evening: "Evening (from 18:00)", night: "Night (past midnight)", unknown: "Hours unknown" };
 export const UNCATEGORISED = "uncategorised";
 
@@ -46,9 +46,9 @@ export function matches(facility, filter) {
 }
 
 export function markerKind(offerings) {
-  const hire = offerings.has("event_hire");
+  const rent = offerings.has("event_rental");
   const hosting = offerings.has("event_hosting");
-  return hire && hosting ? "both" : hire ? "hire" : "hosting";
+  return rent && hosting ? "both" : rent ? "rent" : "hosting";
 }
 
 export function countBy(facilities, key) {

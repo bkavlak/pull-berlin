@@ -43,7 +43,7 @@ QUESTION_SET_V1 = QuestionSet(
     version="v1",
     yes_no=(
         YesNoQuestion(
-            Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS),
+            Proposition(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS),
             "Does the text say that customers can rent or book this place, or a room in it, "
             "for their own private event, party, wedding or company event?",
         ),

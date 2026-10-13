@@ -9,7 +9,7 @@ from pull_berlin.catalog.domain.values import SpaceCategory
 from pull_berlin.extraction.caching_classifier import CachingClassifier
 from pull_berlin.extraction.ports import Judgement
 
-HIRE = Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS)
+RENT = Proposition(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS)
 LOFT = Proposition(ClaimType.FALLS_UNDER_CATEGORY, SpaceCategory.LOFT)
 
 
@@ -21,7 +21,7 @@ class CountingClassifier:
 
     def classify(self, texts: Sequence[str]) -> list[Judgement]:
         self.seen.extend(texts)
-        return [{HIRE: 0.8, LOFT: 0.6} for _ in texts]
+        return [{RENT: 0.8, LOFT: 0.6} for _ in texts]
 
 
 def test_each_text_is_classified_once_across_runs(tmp_path: Path) -> None:
@@ -29,7 +29,7 @@ def test_each_text_is_classified_once_across_runs(tmp_path: Path) -> None:
     CachingClassifier(inner, tmp_path / "c.jsonl", "v1").classify(["a", "b"])
     judgements = CachingClassifier(inner, tmp_path / "c.jsonl", "v1").classify(["b", "a", "c"])
     assert inner.seen == ["a", "b", "c"]
-    assert judgements[0] == {HIRE: 0.8, LOFT: 0.6}
+    assert judgements[0] == {RENT: 0.8, LOFT: 0.6}
 
 
 def test_new_question_version_invalidates_cached_answers(tmp_path: Path) -> None:

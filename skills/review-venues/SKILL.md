@@ -13,7 +13,7 @@ What the person decides, per venue, for three claims:
 
 | short name | question for the person |
 |---|---|
-| `hireable` | Can you rent this place, or a room in it, for your own private event (party, wedding, company event)? |
+| `rentable` | Can you rent this place, or a room in it, for your own private event (party, wedding, company event)? |
 | `hosts` | Does it run its own public evening events (concerts, club nights, parties, readings, screenings)? |
 | `late` | Is it open, or do its events go on, past midnight? |
 
@@ -87,10 +87,10 @@ Then record exactly what they said (an optional note in their words if they gave
 
 ```bash
 uv run pull-berlin review record --reviewer <login> --facility <id> \
-  --hireable yes --hosts no --late unsure --note "Booking form on /mieten"
+  --rentable yes --hosts no --late unsure --note "Booking form on /mieten"
 ```
 
-It prints the effect on the map, e.g. `Festsaal Kreuzberg: event_hire 0.80 (evening) -> event_hire 1.00 (evening)`.
+It prints the effect on the map, e.g. `Festsaal Kreuzberg: event_rental 0.80 (evening) -> event_rental 1.00 (evening)`.
 Pass that line on, then continue with the next venue.
 
 - `skip` → `uv run pull-berlin review skip --reviewer <login> --facility <id>` (stays local).

@@ -14,8 +14,8 @@ const feature = (props, coords = [13.42, 52.51]) => ({
 });
 
 test("a GeoJSON feature becomes a facility with parsed offerings and refs", () => {
-  const f = toFacility(feature({ offerings: "event_hire;event_hosting" }));
-  assert.deepEqual([...f.offerings].sort(), ["event_hire", "event_hosting"]);
+  const f = toFacility(feature({ offerings: "event_rental;event_hosting" }));
+  assert.deepEqual([...f.offerings].sort(), ["event_hosting", "event_rental"]);
   assert.deepEqual(f.refs, ["osm:node/1", "site:tresorberlin.com"]);
   assert.deepEqual([f.lon, f.lat], [13.42, 52.51]);
 });
@@ -41,9 +41,9 @@ test("the empty filter lets everything through", () => {
 });
 
 test("filtering by offering keeps facilities with any selected offering", () => {
-  const filter = { ...emptyFilter(), kinds: new Set(["event_hire"]) };
+  const filter = { ...emptyFilter(), kinds: new Set(["event_rental"]) };
   assert.equal(matches(toFacility(feature({ offerings: "event_hosting" })), filter), false);
-  assert.equal(matches(toFacility(feature({ offerings: "event_hire;event_hosting" })), filter), true);
+  assert.equal(matches(toFacility(feature({ offerings: "event_rental;event_hosting" })), filter), true);
 });
 
 test("filtering by night keeps only facilities known to operate past midnight", () => {
@@ -70,10 +70,10 @@ test("name search ignores case and accents", () => {
   assert.equal(matches(f, { ...emptyFilter(), query: "CAFE" }), true);
 });
 
-test("marker kind distinguishes hire, hosting and both", () => {
-  assert.equal(markerKind(new Set(["event_hire"])), "hire");
+test("marker kind distinguishes rental, hosting and both", () => {
+  assert.equal(markerKind(new Set(["event_rental"])), "rent");
   assert.equal(markerKind(new Set(["event_hosting"])), "hosting");
-  assert.equal(markerKind(new Set(["event_hire", "event_hosting"])), "both");
+  assert.equal(markerKind(new Set(["event_rental", "event_hosting"])), "both");
 });
 
 test("countBy counts facilities per category for the filter chips", () => {

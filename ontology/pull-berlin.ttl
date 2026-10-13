@@ -101,11 +101,11 @@ pb:SpaceUseRole a owl:Class ;
     skos:scopeNote "Extension point. New use cases (coworking, rehearsal, sports) are new subclasses."@en ;
     pb:domainModelType "pull_berlin.catalog.domain.offering.Offering" .
 
-pb:EventHireRole a owl:Class ;
+pb:EventRentalRole a owl:Class ;
     rdfs:subClassOf pb:SpaceUseRole ;
-    rdfs:label "Event Hire Role"@en , "Vermietung für Veranstaltungen"@de ;
+    rdfs:label "Event Rental Role"@en , "Vermietung für Veranstaltungen"@de ;
     skos:definition "A Space Use Role that is realized in an Act of Facility Use or an Act of Renting in which an Agent other than the operator uses an Event Space for that Agent's own planned event."@en ;
-    pb:domainModelType "pull_berlin.catalog.domain.offering.OfferingKind.EVENT_HIRE" .
+    pb:domainModelType "pull_berlin.catalog.domain.offering.OfferingKind.EVENT_RENTAL" .
 
 pb:EventHostingRole a owl:Class ;
     rdfs:subClassOf pb:SpaceUseRole ;

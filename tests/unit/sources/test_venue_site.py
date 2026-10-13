@@ -139,10 +139,10 @@ class TestAbsorb:
         extra = observation(
             source_id="site",
             local_id="x.de",
-            statements=(statement(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS),),
+            statements=(statement(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS),),
         )
         enriched = facility().absorb(extra)
-        assert Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS) in {
+        assert Proposition(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS) in {
             s.proposition for s in enriched.statements
         }
 

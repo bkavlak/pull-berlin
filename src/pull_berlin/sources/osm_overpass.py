@@ -38,7 +38,7 @@ _AMENITY_STATEMENTS: Mapping[str, tuple[tuple[Proposition, float], ...]] = {
         (Proposition(_YES.FALLS_UNDER_CATEGORY, _C.BAR), 0.8),
     ),
     "events_venue": (
-        (Proposition(_YES.IS_HIREABLE_FOR_PRIVATE_EVENTS), 1.0),
+        (Proposition(_YES.IS_RENTABLE_FOR_PRIVATE_EVENTS), 1.0),
         (Proposition(_YES.FALLS_UNDER_CATEGORY, _C.EVENT_HALL), 1.0),
     ),
     "music_venue": (
@@ -56,7 +56,7 @@ _AMENITY_STATEMENTS: Mapping[str, tuple[tuple[Proposition, float], ...]] = {
         (Proposition(_YES.FALLS_UNDER_CATEGORY, _C.GALLERY), 0.4),
     ),
     "community_centre": (
-        (Proposition(_YES.IS_HIREABLE_FOR_PRIVATE_EVENTS), 0.6),
+        (Proposition(_YES.IS_RENTABLE_FOR_PRIVATE_EVENTS), 0.6),
         (Proposition(_YES.FALLS_UNDER_CATEGORY, _C.CULTURAL_CENTRE), 0.6),
     ),
 }

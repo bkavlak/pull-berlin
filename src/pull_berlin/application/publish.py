@@ -75,7 +75,7 @@ def changes(before: Sequence[FacilityView], after: Sequence[FacilityView]) -> li
 
 
 def describe(view: FacilityView | None) -> str:
-    """One line per facility as the map shows it, e.g. 'event_hire 0.97 (evening, night)'."""
+    """One line per facility as the map shows it, e.g. 'event_rental 0.97 (evening, night)'."""
     if view is None or not view.offerings:
         return "not on the map"
     windows = sorted({w for o in view.offerings for w in o.windows})

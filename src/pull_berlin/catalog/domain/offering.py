@@ -12,12 +12,12 @@ from pull_berlin.shared_kernel import PB
 class OfferingKind(Enum):
     """Extension point: new use cases (coworking, rehearsal, …) are new members + ontology roles."""
 
-    EVENT_HIRE = "event_hire"  # you can book the space for your own event
+    EVENT_RENTAL = "event_rental"  # you can book the space for your own event
     EVENT_HOSTING = "event_hosting"  # the operator runs its own evening/night program
 
     @property
     def ontology_term(self) -> str:
-        return PB + {"event_hire": "EventHireRole", "event_hosting": "EventHostingRole"}[self.value]
+        return PB + {"event_rental": "EventRentalRole", "event_hosting": "EventHostingRole"}[self.value]
 
 
 @dataclass(frozen=True)

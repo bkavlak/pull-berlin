@@ -12,7 +12,7 @@
 ex:building-1   a cco:ont00000641 ;                         # Entertainment Facility
     obo:BFO_0000171 ex:location-1 , pb:FriedrichshainKreuzberg ;
     pb:providesSite ex:hall-1 , ex:yard-1 ;
-    obo:BFO_0000196 ex:hire-role-1 , ex:hosting-role-1 .   # bearer of
+    obo:BFO_0000196 ex:rental-role-1 , ex:hosting-role-1 .   # bearer of
 ex:operator-1   a cco:ont00001180 ; pb:operates ex:building-1 .   # Organization
 
 # --- the spaces (sites): one bona fide, one partly fiat
@@ -28,7 +28,7 @@ ex:location-1 a cco:ont00000487 ; geo:hasGeometry ex:geom-1 .
 ex:geom-1 geo:asWKT "POINT(13.4401 52.4988)"^^geo:wktLiteral .
 
 # --- ways of use (roles) -> domain Offerings
-ex:hire-role-1    a pb:EventHireRole    ; obo:BFO_0000197 ex:building-1 ; pb:realizableDuring pb:Evening , pb:Night .
+ex:rental-role-1    a pb:EventRentalRole    ; obo:BFO_0000197 ex:building-1 ; pb:realizableDuring pb:Evening , pb:Night .
 ex:hosting-role-1 a pb:EventHostingRole ; obo:BFO_0000197 ex:building-1 ; pb:realizableDuring pb:Night .
 
 # --- information side: source -> observation -> evidence -> claim
@@ -44,7 +44,7 @@ ex:obs-1-ibe a cco:ont00000253 ; obo:BFO_0000101 ex:obs-1 ;
 ex:ev-1-ibe a cco:ont00000253 ; obo:BFO_0000101 ex:ev-1 ;
     cco:ont00001765 "Wir haben den großen Saal für unseren 30. gemietet, Party ging bis 4 Uhr." .
 
-ex:claim-hire-1 a pb:Claim ; cco:ont00001808 ex:hire-role-1 ;
+ex:claim-rental-1 a pb:Claim ; cco:ont00001808 ex:rental-role-1 ;
     pb:supportedBy ex:ev-1 ; pb:confidence "0.87"^^xsd:decimal .
 ex:claim-cat-1 a pb:SpaceCategoryAssignment ; cco:ont00001808 ex:hall-1 ;
     pb:assignsCategory pb:EventHall ; pb:supportedBy ex:ev-1 ; pb:confidence "0.64"^^xsd:decimal .

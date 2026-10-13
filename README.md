@@ -1,6 +1,6 @@
 # pull-berlin
 
-A catalog of **Berlin spaces** built from many heterogeneous sources. It starts with spaces usable for **events in the evening and at night**: spaces you can hire for your own event, and venues that host their own programs.
+A catalog of **Berlin spaces** built from many heterogeneous sources. It starts with spaces usable for **events in the evening and at night**: spaces you can rent for your own event, and venues that host their own programs.
 
 **Map: https://bkavlak.github.io/pull-berlin/** · **Help check the data: [CONTRIBUTING.md](CONTRIBUTING.md)** — open this repo in any AI coding agent and say *"I want to review Berlin venues"*.
 

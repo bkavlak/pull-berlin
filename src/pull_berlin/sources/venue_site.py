@@ -1,4 +1,4 @@
-"""A facility's own website: the most authoritative place to learn whether it can be hired.
+"""A facility's own website: the most authoritative place to learn whether it can be rented.
 
 Visits the homepage and a few same-site pages whose link looks relevant ("Location mieten",
 "Private Events", "Programm"), honouring robots.txt. Produces Passages; deciding what they say

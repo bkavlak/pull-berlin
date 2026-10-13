@@ -16,18 +16,18 @@ from pull_berlin.sourcing.ports import Fetcher
 from ...fakes import FakeFetcher
 from ..catalog.builders import facility, statement
 
-HIRE = ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS
+RENT = ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS
 HOSTS = ClaimType.HOSTS_EVENING_EVENTS
 SURE = facility(
-    local_id="node/1", name="Sure Hall", website="https://sure.example", statements=(statement(HIRE),)
+    local_id="node/1", name="Sure Hall", website="https://sure.example", statements=(statement(RENT),)
 )
 UNSURE = facility(
     local_id="node/2",
     name="Café Grenzfall",
     website="https://grenzfall.example",
-    statements=(statement(HIRE, source_id="site", kind=SourceKind.VENUE_OWN_SITE, strength=0.62),),
+    statements=(statement(RENT, source_id="site", kind=SourceKind.VENUE_OWN_SITE, strength=0.62),),
 )
-NO_SITE = facility(local_id="node/3", name="Kiezraum", statements=(statement(HIRE, strength=0.75),))
+NO_SITE = facility(local_id="node/3", name="Kiezraum", statements=(statement(RENT, strength=0.75),))
 
 
 class StubSite:
@@ -54,11 +54,11 @@ class StubClassifier:
     model_id = "stub-1"
 
     def classify(self, texts: Sequence[str]) -> list[Judgement]:
-        return [{Proposition(HIRE): 0.9 if "mieten" in t else 0.1, Proposition(HOSTS): 0.0} for t in texts]
+        return [{Proposition(RENT): 0.9 if "mieten" in t else 0.1, Proposition(HOSTS): 0.0} for t in texts]
 
 
 def said(facility_id: str) -> Review:
-    return Review("ada", facility_id, "", date(2026, 10, 13), {HIRE: Verdict.YES})
+    return Review("ada", facility_id, "", date(2026, 10, 13), {RENT: Verdict.YES})
 
 
 def test_next_is_the_facility_closest_to_the_threshold() -> None:
@@ -81,19 +81,19 @@ def test_find_by_id_or_by_name_ignoring_accents() -> None:
 
 def test_item_shows_the_passage_the_model_rated_highest() -> None:
     item = prepare(UNSURE, StubSite(), FakeFetcher({}), StubClassifier())
-    hire = next(c for c in item.checks if c.claim_type is HIRE)
-    assert hire.shown is not None
-    assert hire.shown.url == "https://grenzfall.example/mieten"
-    assert hire.shown.probability == 0.9
+    rent = next(c for c in item.checks if c.claim_type is RENT)
+    assert rent.shown is not None
+    assert rent.shown.url == "https://grenzfall.example/mieten"
+    assert rent.shown.probability == 0.9
     assert item.model == "stub-1"
     assert item.pages_read == 2
 
 
 def test_item_shows_what_the_catalog_believes_and_why() -> None:
-    hire = next(c for c in prepare(UNSURE, None, None, None).checks if c.claim_type is HIRE)
-    assert hire.catalog_confidence == 0.589
-    assert hire.sources == ("site: yes",)
-    assert hire.shown is None
+    rent = next(c for c in prepare(UNSURE, None, None, None).checks if c.claim_type is RENT)
+    assert rent.catalog_confidence == 0.589
+    assert rent.sources == ("site: yes",)
+    assert rent.shown is None
 
 
 def test_a_claim_the_model_finds_nowhere_shows_no_passage() -> None:
@@ -115,14 +115,14 @@ def test_item_survives_being_saved_between_showing_and_recording() -> None:
 
 def test_answers_become_a_review_keeping_what_was_shown() -> None:
     item = prepare(UNSURE, StubSite(), FakeFetcher({}), StubClassifier())
-    made = item.review("ada", {"hireable": Verdict.YES, "hosts": Verdict.NO}, date(2026, 10, 13), "saw it")
+    made = item.review("ada", {"rentable": Verdict.YES, "hosts": Verdict.NO}, date(2026, 10, 13), "saw it")
     assert made.facility_name == "Café Grenzfall"
     assert made.model == "stub-1"
-    assert set(made.shown) == {HIRE}
+    assert set(made.shown) == {RENT}
     assert made.note == "saw it"
 
 
 def test_passages_behind_an_unsure_answer_are_not_kept() -> None:
     item = prepare(UNSURE, StubSite(), FakeFetcher({}), StubClassifier())
-    made = item.review("ada", {"hireable": Verdict.UNSURE, "hosts": Verdict.NO}, date(2026, 10, 13))
+    made = item.review("ada", {"rentable": Verdict.UNSURE, "hosts": Verdict.NO}, date(2026, 10, 13))
     assert made.shown == {}

@@ -14,7 +14,7 @@ from pull_berlin.shared_kernel import PB, SourceKind
 
 
 class ClaimType(Enum):
-    IS_HIREABLE_FOR_PRIVATE_EVENTS = "is_hireable_for_private_events"
+    IS_RENTABLE_FOR_PRIVATE_EVENTS = "is_rentable_for_private_events"
     HOSTS_EVENING_EVENTS = "hosts_evening_events"
     OPERATES_IN_EVENING = "operates_in_evening"
     OPERATES_PAST_MIDNIGHT = "operates_past_midnight"
@@ -28,7 +28,7 @@ class Stance(Enum):
 
 @dataclass(frozen=True)
 class Proposition:
-    """The content of a claim, e.g. 'is hireable' or 'falls under category club'."""
+    """The content of a claim, e.g. 'is rentable' or 'falls under category club'."""
 
     claim_type: ClaimType
     category: SpaceCategory | None = None

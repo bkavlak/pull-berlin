@@ -5,13 +5,13 @@ Each line is one review of one facility, appended by `pull-berlin review record`
 
 ```json
 {"facility": "osm:node/123", "name": "Festsaal Kreuzberg", "reviewer": "ada", "reviewed_on": "2026-10-13",
- "verdicts": {"hireable": "yes", "hosts": "yes", "late": "unsure"},
+ "verdicts": {"rentable": "yes", "hosts": "yes", "late": "unsure"},
  "note": "Booking form on /mieten",
  "model": "gated-laya-0.4.6-multilingual",
- "shown": {"hireable": {"url": "https://…/mieten", "probability": 0.93, "text": "…"}}}
+ "shown": {"rentable": {"url": "https://…/mieten", "probability": 0.93, "text": "…"}}}
 ```
 
-- `verdicts`: `hireable` = can be rented for a private event, `hosts` = runs its own public evening
+- `verdicts`: `rentable` = can be rented for a private event, `hosts` = runs its own public evening
   events, `late` = open or events past midnight. `unsure` adds nothing.
 - `shown`: the passage the model rated highest when the reviewer looked, with its probability —
   so the record doubles as a label for evaluating and fine-tuning Laya (`eval/`).

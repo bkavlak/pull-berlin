@@ -21,7 +21,7 @@ from pull_berlin.extraction.ports import TextClassifier
 from pull_berlin.review.domain import QUESTIONS, REVIEWED_CLAIMS, Review, Shown, Verdict, latest
 from pull_berlin.sourcing.ports import Enricher, Fetcher
 
-_ASKED_FIRST = (ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS, ClaimType.HOSTS_EVENING_EVENTS)
+_ASKED_FIRST = (ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS, ClaimType.HOSTS_EVENING_EVENTS)
 
 
 @dataclass(frozen=True)
@@ -120,7 +120,7 @@ def choose_next(
 ) -> Facility | None:
     """The unreviewed facility (with a website) the catalog is least sure about.
 
-    Uncertainty = how close hire or hosting confidence is to the threshold: a review there is most
+    Uncertainty = how close rental or hosting confidence is to the threshold: a review there is most
     likely to change what the map shows. Ties go by id, so the queue is reproducible.
     """
     assessment = assessment or AssessmentPolicy()

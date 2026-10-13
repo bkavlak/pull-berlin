@@ -25,14 +25,14 @@ REVIEWS_DIR = "data/reviews"
 
 # The claims a person is asked about, by their short name on the command line and in records.
 REVIEWED_CLAIMS: Mapping[str, ClaimType] = {
-    "hireable": ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS,
+    "rentable": ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS,
     "hosts": ClaimType.HOSTS_EVENING_EVENTS,
     "late": ClaimType.OPERATES_PAST_MIDNIGHT,
 }
 
 # How the question is put to a person (plain words; the classifier gets QUESTION_SET_V1).
 QUESTIONS: Mapping[ClaimType, str] = {
-    ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS: "Can you rent this place, or a room in it, "
+    ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS: "Can you rent this place, or a room in it, "
     "for your own private event (party, wedding, company event)?",
     ClaimType.HOSTS_EVENING_EVENTS: "Does it run its own public evening events "
     "(concerts, club nights, parties, readings, screenings)?",

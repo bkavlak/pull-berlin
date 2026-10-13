@@ -19,7 +19,7 @@ HALL = facility(
     name="Festsaal Kreuzberg",
     website="https://festsaal.example",
     statements=(
-        statement(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS),
+        statement(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS),
         statement(ClaimType.OPERATES_IN_EVENING),
     ),
 )
@@ -46,12 +46,12 @@ def test_a_recorded_no_lands_in_the_reviewers_file_and_takes_the_facility_off_th
     assert shown["facility"] == "osm:node/7"
 
     assert (
-        run(repo, "review", "record", "--reviewer", "ada", "--facility", "osm:node/7", "--hireable", "no")
+        run(repo, "review", "record", "--reviewer", "ada", "--facility", "osm:node/7", "--rentable", "no")
         == 0
     )
     assert "-> not on the map" in capsys.readouterr().out
     (line,) = (repo / "reviews" / "ada.jsonl").read_text().splitlines()
-    assert json.loads(line)["verdicts"] == {"hireable": "no", "hosts": "unsure", "late": "unsure"}
+    assert json.loads(line)["verdicts"] == {"rentable": "no", "hosts": "unsure", "late": "unsure"}
 
     assert run(repo, "publish", "--out", str(repo / "out")) == 0
     published = json.loads((repo / "out" / "facilities.geojson").read_text())
@@ -59,19 +59,19 @@ def test_a_recorded_no_lands_in_the_reviewers_file_and_takes_the_facility_off_th
 
 
 def test_the_queue_ends_once_everything_is_reviewed(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    run(repo, "review", "record", "--reviewer", "ada", "--facility", "osm:node/7", "--hireable", "yes")
+    run(repo, "review", "record", "--reviewer", "ada", "--facility", "osm:node/7", "--rentable", "yes")
     capsys.readouterr()
     run(repo, "review", "next", "--reviewer", "ada", "--classifier", "none")
     assert json.loads(capsys.readouterr().out)["done"] is True
 
 
 def test_summary_lists_what_my_reviews_change(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    run(repo, "review", "record", "--reviewer", "ada", "--facility", "osm:node/7", "--hireable", "no")
+    run(repo, "review", "record", "--reviewer", "ada", "--facility", "osm:node/7", "--rentable", "no")
     capsys.readouterr()
     run(repo, "review", "summary", "--reviewer", "ada")
     summary = capsys.readouterr().out
     assert "@ada: 1 facilities checked, 1 change" in summary
-    assert "| Festsaal Kreuzberg (`osm:node/7`) | event_hire 0.80 (evening) | not on the map |" in summary
+    assert "| Festsaal Kreuzberg (`osm:node/7`) | event_rental 0.80 (evening) | not on the map |" in summary
 
 
 def test_check_rejects_a_review_filed_under_someone_elses_name(repo: Path) -> None:

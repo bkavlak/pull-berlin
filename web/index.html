@@ -14,7 +14,7 @@
 :root {
   --bg: #f4f5f7; --panel: #ffffff; --ink: #17202a; --muted: #5d6b79; --line: #dde2e8;
   --accent: #0e7c86; --chip: #eef3f5;
-  --hire: #0e7c86; --hosting: #c43d58; --both: #6a4c93; --stroke: #ffffff;
+  --rent: #0e7c86; --hosting: #c43d58; --both: #6a4c93; --stroke: #ffffff;
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
   --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -22,13 +22,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f1418; --panel: #161d23; --ink: #e5eaef; --muted: #98a6b3; --line: #29333c;
-    --accent: #4fc0c8; --chip: #1e2830; --hire: #4fc0c8; --hosting: #f0718a; --both: #b294de; --stroke: #0f1418;
+    --accent: #4fc0c8; --chip: #1e2830; --rent: #4fc0c8; --hosting: #f0718a; --both: #b294de; --stroke: #0f1418;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f1418; --panel: #161d23; --ink: #e5eaef; --muted: #98a6b3; --line: #29333c;
-  --accent: #4fc0c8; --chip: #1e2830; --hire: #4fc0c8; --hosting: #f0718a; --both: #b294de; --stroke: #0f1418;
+  --accent: #4fc0c8; --chip: #1e2830; --rent: #4fc0c8; --hosting: #f0718a; --both: #b294de; --stroke: #0f1418;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -53,7 +53,7 @@ legend { font: 600 11px var(--font-body); text-transform: uppercase; letter-spac
 .chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .chip .n { font: 12px var(--font-mono); color: var(--muted); }
 .swatch { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--stroke); flex: none; }
-.swatch.hire { background: var(--hire); } .swatch.hosting { background: var(--hosting); } .swatch.both { background: var(--both); }
+.swatch.rent { background: var(--rent); } .swatch.hosting { background: var(--hosting); } .swatch.both { background: var(--both); }
 input[type="search"] { width: 100%; font: 14px var(--font-body); padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
 .range { display: flex; align-items: center; gap: 10px; }
 .range input { flex: 1; accent-color: var(--accent); }
@@ -99,7 +99,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       <p class="note" id="conf-help">How strongly the sources agree that the space offers this. 0.60 is the catalog's own cut-off.</p>
     </fieldset>
     <div class="legend" aria-label="Marker colours">
-      <span><i class="swatch hire"></i>Can be hired</span>
+      <span><i class="swatch rent"></i>Can be rented</span>
       <span><i class="swatch hosting"></i>Hosts own events</span>
       <span><i class="swatch both"></i>Both</span>
       <span class="note">Larger markers = higher confidence</span>
@@ -150,7 +150,7 @@ function chipGroup(containerId, entries, selected, swatch) {
 
 function renderFilters() {
   const kindCounts = new Map(Object.keys(OFFERING_LABELS).map((k) => [k, facilities.filter((f) => f.offerings.has(k)).length]));
-  chipGroup("kinds", Object.entries(OFFERING_LABELS).map(([k, l]) => [k, l, kindCounts.get(k)]), filter.kinds, (k) => (k === "event_hire" ? "hire" : "hosting"));
+  chipGroup("kinds", Object.entries(OFFERING_LABELS).map(([k, l]) => [k, l, kindCounts.get(k)]), filter.kinds, (k) => (k === "event_rental" ? "rent" : "hosting"));
   const windowCounts = countBy(facilities.flatMap((f) => [...f.windows].map((w) => ({ w }))), (x) => x.w);
   chipGroup("windows", Object.entries(WINDOW_LABELS).map(([w, l]) => [w, l, windowCounts.get(w) || 0]), filter.windows);
   const categories = [...countBy(facilities, (f) => f.category)].sort((a, b) => b[1] - a[1]);
@@ -170,8 +170,8 @@ function update() {
   const visible = visibleFacilities();
   const source = map.getSource("spaces");
   if (source) source.setData(toGeoJson(visible));
-  const hire = visible.filter((f) => f.offerings.has("event_hire")).length;
-  $("summary").textContent = `${visible.length} of ${facilities.length} spaces shown · ${hire} can be hired`;
+  const rent = visible.filter((f) => f.offerings.has("event_rental")).length;
+  $("summary").textContent = `${visible.length} of ${facilities.length} spaces shown · ${rent} can be rented`;
   const sorted = [...visible].sort((a, b) => b.confidence - a.confidence || a.name.localeCompare(b.name));
   $("results").replaceChildren(...sorted.slice(0, RESULT_LIMIT).map((f) => el("li", {},
     el("button", { type: "button", onclick: () => focusFacility(f) },
@@ -207,7 +207,7 @@ function focusFacility(f) {
 function addLayers() {
   map.addSource("spaces", { type: "geojson", data: toGeoJson(visibleFacilities()) });
   map.addLayer({ id: "spaces", type: "circle", source: "spaces", paint: {
-    "circle-color": ["match", ["get", "kind"], "hire", css("--hire"), "hosting", css("--hosting"), css("--both")],
+    "circle-color": ["match", ["get", "kind"], "rent", css("--rent"), "hosting", css("--hosting"), css("--both")],
     "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, ["interpolate", ["linear"], ["get", "confidence"], 0.6, 3, 1, 6],
                                                           15, ["interpolate", ["linear"], ["get", "confidence"], 0.6, 6, 1, 11]],
     "circle-stroke-color": css("--stroke"), "circle-stroke-width": 1.2, "circle-opacity": 0.9 } });

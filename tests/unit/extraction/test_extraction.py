@@ -10,7 +10,7 @@ from pull_berlin.extraction.policy import ExtractionPolicy
 from pull_berlin.extraction.questions import QUESTION_SET_V1
 from pull_berlin.shared_kernel import SourceKind
 
-HIRE = Proposition(ClaimType.IS_HIREABLE_FOR_PRIVATE_EVENTS)
+RENT = Proposition(ClaimType.IS_RENTABLE_FOR_PRIVATE_EVENTS)
 HOSTS = Proposition(ClaimType.HOSTS_EVENING_EVENTS)
 LATE = Proposition(ClaimType.OPERATES_PAST_MIDNIGHT)
 CLUB = Proposition(ClaimType.FALLS_UNDER_CATEGORY, SpaceCategory.CLUB)
@@ -28,7 +28,7 @@ def extract(judgement: dict[Proposition, float]):  # type: ignore[no-untyped-def
 
 class TestQuestionSet:
     def test_asks_one_yes_no_question_per_offering_relevant_claim(self) -> None:
-        assert {q.proposition for q in QUESTION_SET_V1.yes_no} == {HIRE, HOSTS, LATE}
+        assert {q.proposition for q in QUESTION_SET_V1.yes_no} == {RENT, HOSTS, LATE}
 
     def test_category_question_offers_every_category_with_a_prototype(self) -> None:
         assert set(QUESTION_SET_V1.category.criteria) == set(SpaceCategory)
@@ -40,21 +40,21 @@ class TestQuestionSet:
 
 class TestExtractionPolicy:
     def test_confident_yes_becomes_supporting_evidence_with_the_probability_as_strength(self) -> None:
-        (statement,) = extract({HIRE: 0.83})
-        assert statement.proposition == HIRE
+        (statement,) = extract({RENT: 0.83})
+        assert statement.proposition == RENT
         assert (statement.evidence.stance, statement.evidence.strength) == (Stance.SUPPORTS, 0.83)
 
     def test_low_probability_is_silence_not_opposition(self) -> None:
-        assert extract({HIRE: 0.1}) == ()
+        assert extract({RENT: 0.1}) == ()
 
     def test_evidence_points_to_the_page_and_quotes_the_passage(self) -> None:
-        (statement,) = extract({HIRE: 0.9})
+        (statement,) = extract({RENT: 0.9})
         assert statement.evidence.url == "https://x.example/mieten"
         assert statement.evidence.excerpt.startswith("Unsere Location")
 
     def test_long_passages_are_quoted_shortened(self) -> None:
         long = Passage(text="Wort " * 200, url="https://x.example")
-        (statement,) = POLICY.statements([long], [{HIRE: 0.9}], "site", SourceKind.VENUE_OWN_SITE)
+        (statement,) = POLICY.statements([long], [{RENT: 0.9}], "site", SourceKind.VENUE_OWN_SITE)
         assert len(statement.evidence.excerpt) <= 281
 
     def test_only_the_most_likely_category_is_kept(self) -> None:
@@ -79,9 +79,9 @@ class TestKeywordClassifier:
             "Raumvermietung: Anfragen an info@x.de",
         ],
     )
-    def test_rental_wording_signals_hireability(self, text: str) -> None:
+    def test_rental_wording_signals_rentability(self, text: str) -> None:
         (judgement,) = KeywordClassifier().classify([text])
-        assert judgement[HIRE] > 0.5
+        assert judgement[RENT] > 0.5
 
     @pytest.mark.parametrize(
         "text",
@@ -95,9 +95,9 @@ class TestKeywordClassifier:
             "Die Location ist mietbar ab 50 Personen.",
         ],
     )
-    def test_bar_wording_for_private_events_signals_hireability(self, text: str) -> None:
+    def test_bar_wording_for_private_events_signals_rentability(self, text: str) -> None:
         (judgement,) = KeywordClassifier().classify([text])
-        assert judgement[HIRE] > 0.5
+        assert judgement[RENT] > 0.5
 
     @pytest.mark.parametrize(
         "text",
@@ -126,9 +126,9 @@ class TestKeywordClassifier:
             "Responsible gaming: limieten, time-out, zelfuitsluiting",
         ],
     )
-    def test_near_misses_do_not_signal_hosting_or_hireability(self, text: str) -> None:
+    def test_near_misses_do_not_signal_hosting_or_rentability(self, text: str) -> None:
         (judgement,) = KeywordClassifier().classify([text])
-        assert judgement[HOSTS] == 0.0 and judgement[HIRE] == 0.0
+        assert judgement[HOSTS] == 0.0 and judgement[RENT] == 0.0
 
     def test_model_id_changes_when_the_vocabulary_changes(self) -> None:
         assert KeywordClassifier().model_id == "keywords-v3"

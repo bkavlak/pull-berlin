@@ -9,7 +9,7 @@ Binding rules: [`AGENTS.md`](../AGENTS.md) → APOSD, DDD, TDD.
 ## 1. Purpose
 
 Build a catalog of **Berlin spaces** from many heterogeneous sources.
-First use case: **spaces usable for events in the evening and at night** — both spaces you can *hire* for your own event and venues that *host* evening/night programs.
+First use case: **spaces usable for events in the evening and at night** — both spaces you can *rent* for your own event and venues that *host* evening/night programs.
 
 The model is built around `Space` + `Offering` so that later use cases (coworking, studios, rehearsal rooms, sports halls, …) are new `Offering` kinds, not a rewrite.
 
@@ -18,7 +18,7 @@ The model is built around `Space` + `Offering` so that later use cases (coworkin
 | # | Decision | Choice |
 |---|---|---|
 | D1 | Language & tooling | Python (pinned in `.tool-versions`); runtimes via **asdf**, packages via **uv** — see `rules/tooling.md` |
-| D2 | Target venues | Both hire-able spaces and hosting venues, as separate offering kinds |
+| D2 | Target venues | Both rentable spaces and hosting venues, as separate offering kinds |
 | D3 | Time windows | `Evening` = available from 18:00; `Night` = available past 00:00 |
 | D4 | Geography | Berlin city limits (12 Bezirke) |
 | D5 | Run mode | One-off / manual runs; catalog keeps latest state; raw fetches are cached |
@@ -29,7 +29,7 @@ The model is built around `Space` + `Offering` so that later use cases (coworkin
 | D10 | Foundation | Parallel formal ontology: BFO 2020 → CCO → `pb:` with GeoSPARQL/PROV/SKOS, applying Smith & Mark (1998). Domain model specializes it. See [`ontology.md`](ontology.md) |
 | D11 | Spatial store | Local **PostGIS** behind `SpaceRepository` (replaces SQLite). Enables containment, Bezirk assignment, proximity search, and GeoSQL |
 | D12 | Map in the loop | **GeoSQL** agent skill + self-hosted **Dekart** to render query results and catch geometry errors visually |
-| D14 | Human review | People check claims (hireable / hosts / past midnight) with Laya's best passage in front of them; answers are `pb:HumanReview` evidence (prior 0.98) in `data/reviews/<login>.jsonl`. Contributed by pull requests that change only that file, through the agent-agnostic skill `skills/review-venues/`. The public map (GitHub Pages) = committed snapshot `data/catalog/facilities.json` + all reviews, rebuilt by CI |
+| D14 | Human review | People check claims (rentable / hosts / past midnight) with Laya's best passage in front of them; answers are `pb:HumanReview` evidence (prior 0.98) in `data/reviews/<login>.jsonl`. Contributed by pull requests that change only that file, through the agent-agnostic skill `skills/review-venues/`. The public map (GitHub Pages) = committed snapshot `data/catalog/facilities.json` + all reviews, rebuilt by CI |
 | D13 | Aggregate root | **Facility** (cco:Material Artifact) is the aggregate root; sources describe facilities, offerings are its roles. Event Spaces become entities inside it when a source distinguishes them |
 
 ---
@@ -43,7 +43,7 @@ Each term below is defined formally in `ontology/pull-berlin.ttl`; the table in 
 | **Space** | An event space: a *site* (hall, floor, courtyard) provided by a building or other artifact in Berlin. Enclosed (bona fide boundaries) or open-air (partly fiat). Identity: our `SpaceId`. Aggregate root. |
 | **Facility** | The material thing (building, boat, arch) that provides one or more Spaces and is operated by an Agent. |
 | **Offering** | A way a Space can be used (ontologically a *Space Use Role* of its Facility). Kind + time windows + optional terms. A Space has 0..n Offerings. |
-| **OfferingKind** | `EVENT_HIRE` (you can book the space for your own event), `EVENT_HOSTING` (the space runs its own evening/night program). Extensible enum. |
+| **OfferingKind** | `EVENT_RENTAL` (you can book the space for your own event), `EVENT_HOSTING` (the space runs its own evening/night program). Extensible enum. |
 | **TimeWindow** | `EVENING` (≥18:00) or `NIGHT` (past 00:00), derived from opening hours or claims. |
 | **Source** | A place information comes from (e.g. *OSM Overpass*, *Google Maps*). Has a `SourceKind` and a reliability prior. |
 | **SourceKind** | Characteristic category of a source — see §4. |
@@ -51,7 +51,7 @@ Each term below is defined formally in `ontology/pull-berlin.ttl`; the table in 
 | **Observation** | A source's statement about one Space-like thing: name, location, attributes, texts. Produced by a source adapter from a RawDocument. |
 | **Evidence** | A piece of text or field in an Observation that supports a Claim (e.g. one Google review). Always points back to its Source and URL. |
 | **SpaceCategory** | A prototype-based (radial) category such as club or loft; Spaces fall under it to a degree. |
-| **Claim** | A typed assertion about a Space, e.g. `is_hireable_for_private_events`, `space_type=club`, `capacity_band=100-300`, `operates_past_midnight`. Carries a probability and its Evidence. |
+| **Claim** | A typed assertion about a Space, e.g. `is_rentable_for_private_events`, `space_type=club`, `capacity_band=100-300`, `operates_past_midnight`. Carries a probability and its Evidence. |
 | **Confidence** | The catalog's combined belief in a Claim across all Evidence, using source priors and classifier probabilities. |
 | **Resolution** | Deciding that two Observations describe the same Space. |
 | **Catalog** | The set of resolved Spaces with their Offerings and Claims. |
@@ -93,14 +93,14 @@ Every source is registered with: `id`, `SourceKind`, `reliability_prior` per cla
 |---|---|---|---|---|
 | `OPEN_GEODATA` | existence, location, category, opening hours | **OpenStreetMap Overpass** (`amenity=nightclub|bar|pub|events_venue|community_centre|arts_centre|theatre|music_venue`, …) | public API, ODbL | **slice 1** |
 | `MAPS_AND_REVIEWS` | lived experience: "we rented the back room", vibe, real hours, crowd size | **Google Maps** (reviews, hours, categories), Foursquare, Yelp | Playwright scraping (Google), APIs | **slice 1** (Google) |
-| `RENTAL_MARKETPLACE` | explicit hireability, capacity, price | Spacebase, eventlocation directories, Partyraum sites, Peerspace-like | HTML scraping | later |
+| `RENTAL_MARKETPLACE` | explicit rentability, capacity, price | Spacebase, eventlocation directories, Partyraum sites, Peerspace-like | HTML scraping | later |
 | `EVENT_LISTING` | hosting evidence: night events actually happen there | Resident Advisor Berlin, visitBerlin / berlin.de, Tip Berlin, Exberliner, Eventbrite, Meetup | HTML/JSON | later |
 | `VENUE_OWN_SITE` | authoritative terms: "Location mieten", "Private Events", capacity, contact | the Space's website, discovered via other sources | crawl 1–2 levels | later |
 | `OFFICIAL_COMMUNITY` | legitimacy, scene membership | Clubcommission Berlin members, daten.berlin.de | HTML/CSV | later |
 | `SOCIAL` | recency, events | Instagram, Facebook events | hard; ToS | parked |
 
 Creative signals we deliberately want:
-- **Google reviews** classified by Laya for hire/private-event mentions, late operation, capacity hints.
+- **Google reviews** classified by Laya for rental/private-event mentions, late operation, capacity hints.
 - **Event listings as hosting proof** — an RA event at 23:00 is strong `NIGHT` + `EVENT_HOSTING` evidence.
 - **Venue-site keyword pages** (`/mieten`, `/location`, `/private-events`, `/booking`) found by crawling outward from known Spaces.
 - Disagreement between sources is information (e.g. OSM says closed at 22:00, reviews talk about 4am) — Confidence handles it, nobody overwrites.
@@ -120,7 +120,7 @@ Space (aggregate root)
   offerings() -> list[Offering]     (DERIVED from claims, never set by hand)
 
 Offering (value object)
-  kind: OfferingKind           (EVENT_HIRE | EVENT_HOSTING | … future)
+  kind: OfferingKind           (EVENT_RENTAL | EVENT_HOSTING | … future)
   windows: frozenset[TimeWindow]
   confidence: Confidence
   terms: OfferingTerms | None  (capacity, price hints, contact)
@@ -135,7 +135,7 @@ Claim (value object)
 Domain services / policies:
 - `ResolutionPolicy` — same Space if `ExternalRef` matches, else normalized-name similarity ≥ threshold **and** distance ≤ 75 m (tunable, tested by scenarios).
 - `ConfidencePolicy` — per claim: combine evidence as independent noisy-OR of `source_prior(kind, claim_type) × classifier_probability`; contradicting evidence reduces it. Pure function.
-- `OfferingPolicy` — derives Offerings: e.g. `EVENT_HIRE` if `is_hireable_for_private_events` confidence ≥ τ; windows from opening hours and `operates_past_midnight`.
+- `OfferingPolicy` — derives Offerings: e.g. `EVENT_RENTAL` if `is_rentable_for_private_events` confidence ≥ τ; windows from opening hours and `operates_past_midnight`.
 
 Invariants (tested first):
 - A Space has a location inside the Berlin boundary.
@@ -155,7 +155,7 @@ Laya (`laya` on PyPI, Apache-2.0) answers typed questions over a text in one for
 
 | ClaimType | Laya type | Question |
 |---|---|---|
-| `is_hireable_for_private_events` | noul | Can this space be rented or booked for a private event or party? |
+| `is_rentable_for_private_events` | noul | Can this space be rented or booked for a private event or party? |
 | `hosts_evening_events` | noul | Does this place host its own events in the evening? |
 | `operates_past_midnight` | noul | Is this place open or used after midnight? |
 | `space_type` | choice | club / bar / event_hall / loft / gallery / restaurant / cultural_centre / other |
@@ -227,11 +227,11 @@ Adding a source = new package under `sources/` + registry entry + fixtures. Addi
 3. ✅ **OSM slice** — Overpass adapter, opening-hours → TimeWindow, export CSV/JSON/GeoJSON. First run (2026-10-12): 3,339 OSM objects → 3,309 facilities → 530 with an evening/night offering.
 4. ✅ **Map** — `web/index.html` (MapLibre + OpenFreeMap): filters for offering, time window, category, confidence and name; `pull-berlin serve`. Still open: GeoSQL + Dekart QA views once PostGIS lands.
 5. ✅ **Venue websites + extraction** — VenueSiteSource, QuestionSet v1, keyword baseline, Laya adapter with lexical gate, classification cache, eval tooling, silver set (50 passages).
-5b. ✅ **Bars that host events** — OSM event tags (live_music, karaoke, nightclub, music_genre), keyword classifier v3 with bar vocabulary, `--site-categories bar`, parallel resumable crawl. Run 2026-10-12: 594 bar sites, 452 read; catalog 539 → 718 spaces, 187 of them bars (99 hireable, 139 hosting, 90 past midnight).
+5b. ✅ **Bars that host events** — OSM event tags (live_music, karaoke, nightclub, music_genre), keyword classifier v3 with bar vocabulary, `--site-categories bar`, parallel resumable crawl. Run 2026-10-12: 594 bar sites, 452 read; catalog 539 → 718 spaces, 187 of them bars (99 rentable, 139 hosting, 90 past midnight).
 5c. ✅ **Public map + human review** — GitHub Pages from snapshot + reviews; `pull-berlin review` loop and skill; data-only PR check in CI.
 6. **Laya fine-tuning** — human-reviewed labels (a few hundred passages), fine-tune on Apple Silicon, adopt if it beats keywords.
 7. **Google Maps reviews** — only with one of the D7 options.
-8. Next sources: Resident Advisor (hosting evidence), Spacebase (hire evidence).
+8. Next sources: Resident Advisor (hosting evidence), Spacebase (rental evidence).
 
 ---
 
